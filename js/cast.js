@@ -196,6 +196,15 @@
       root: root, h: 0.3, scale: 1.12, mobile: 0.5, fin: 0.56, intro: 0.86, shadow: true,
       update: function (f) {
         var j = hop(f.tap);
+        if (f.mode === "walk") {
+          // Side view: both walk toward +x, Pip a step behind and taking two steps for each of Noodle's.
+          noodle.apply({ pos: [0, 0, 0], yaw: PI / 2, walk: f.walk, walkAmp: f.moving, breathe: f.t * 2.1, headYaw: -0.55 * (1 - f.moving) + f.px * 0.2, headPitch: -f.py * 0.15,
+            blink: POV.blinks(f.t % 5.2, BLINK_NOODLE), pupil: 0.6, tailPhase: f.t * 3.2, tailAmp: 0.35, tailUp: 0.85, paw: j });
+          pip.apply({ pos: [-0.44, j * 0.05, 0.13], yaw: PI / 2, walk: f.walk * 1.9, walkAmp: f.moving, breathe: f.t * 3, headYaw: -0.5 * (1 - f.moving), headPitch: 0.1,
+            blink: POV.blinks(f.t % 3.9, BLINK_PIP), pupil: 0.8, tailPhase: f.t * 5, tailAmp: 0.5, tailUp: 0.9, squash: j > 0 ? -0.15 * j : 0 });
+          props.update(f);
+          return;
+        }
         // Pip trots a circle round Noodle; scrolling speeds him up.
         ang += f.dt * (0.55 + f.moving * 1.6);
         var x = Math.sin(ang) * R, z = Math.cos(ang) * R;

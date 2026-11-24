@@ -1,174 +1,105 @@
 <!doctype html>
-<html lang="en" data-s="0">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bryce Nishida | Riscei, Beepo Cat, Noodle &amp; Pip</title>
 <meta name="description" content="Bryce Nishida builds audiences and the characters they follow: @Riscei on TikTok, Beepo Cat, and Noodle &amp; Pip.">
-<meta name="theme-color" content="#0f7a6c">
+<meta name="theme-color" content="#0c2b2a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230f7a6c'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' text-anchor='middle' fill='%23fff'%3EBN%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- One full-screen slide per brand. Each frame is drawn on a 1440 x 900 design grid and scaled as one piece. -->
-<main class="stage" id="stage">
-
-  <section class="slide" data-word="Riscei" aria-label="Riscei">
-    <div class="frame">
-      <div class="layer word" aria-hidden="true"><span></span></div>
-      <div class="layer shadow"></div>
-      <div class="layer hero"><img class="sage" src="media/sage-cut.webp" alt="Sage, the agent I main, holding her healing orb" width="1000" height="1080"></div>
-      <div class="layer fruit">
-        <figure class="card">
-          <video src="media/sage-wall.mp4" poster="media/sage-wall.jpg" muted loop playsinline preload="metadata" aria-label="My gameplay: a Sage wall goes up before an ace"></video>
-          <figcaption>My gameplay</figcaption>
-        </figure>
-      </div>
-      <div class="layer corner"></div>
-    </div>
-  </section>
-
-  <section class="slide" data-word="Beepo" aria-label="Beepo Cat">
-    <div class="frame">
-      <div class="layer word" aria-hidden="true"><span></span></div>
-      <div class="layer shadow"></div>
-      <div class="layer hero"></div>
-      <div class="layer fruit"></div>
-      <div class="layer corner"></div>
-    </div>
-  </section>
-
-  <section class="slide" data-word="Noodle &amp; Pip" aria-label="Noodle and Pip">
-    <div class="frame">
-      <div class="layer word" aria-hidden="true"><span></span></div>
-      <div class="layer shadow"></div>
-      <div class="layer hero"></div>
-      <div class="layer fruit"></div>
-      <div class="layer corner"></div>
-    </div>
-  </section>
-
-  <section class="slide" data-word="Hello" aria-label="Contact">
-    <div class="frame">
-      <div class="layer word" aria-hidden="true"><span></span></div>
-      <div class="layer shadow"></div>
-      <div class="layer hero">
-        <div class="hello">
-          <h2>Let's work together</h2>
-          <p>Open to social media marketing and content roles. Based in Hawaii.</p>
-          <p class="hello-links">
-            <a class="pill solid" href="https://linktr.ee/riscei" target="_blank" rel="noopener noreferrer">Linktree</a>
-            <a class="pill" href="https://www.tiktok.com/@riscei" target="_blank" rel="noopener noreferrer">@riscei</a>
-            <a class="pill" href="https://beepocat.com" target="_blank" rel="noopener noreferrer">beepocat.com</a>
-          </p>
-        </div>
-      </div>
-      <div class="layer fruit"></div>
-      <div class="layer corner"></div>
-    </div>
-  </section>
-
-</main>
-
-<canvas id="gl" aria-hidden="true"></canvas>
-
-<div class="ui">
-  <header class="top">
-    <a class="logo" href="#" data-go="0">Bryce Nishida</a>
-    <nav class="tabs" aria-label="Brands">
-      <button type="button" data-go="0">Riscei</button>
-      <button type="button" data-go="1">Beepo</button>
-      <button type="button" data-go="2">Noodle &amp; Pip</button>
-      <button type="button" data-go="3">Contact</button>
-      <span class="underline" aria-hidden="true"></span>
-    </nav>
-    <span class="role">Audience and character builder</span>
-  </header>
-
-  <div class="bottom">
-    <ul class="stats" data-for="0">
-      <li><b>99M+</b><span>Views</span></li>
-      <li><b>164.9K</b><span>Followers</span></li>
-      <li><b>10.2M</b><span>Likes</span></li>
-    </ul>
-    <ul class="stats" data-for="1">
-      <li><b>29K</b><span>Followers, month one</span></li>
-      <li><b>107K</b><span>TikTok likes</span></li>
-      <li><b>4</b><span>Platforms</span></li>
-    </ul>
-    <ul class="stats" data-for="2">
-      <li><b>44K</b><span>Followers</span></li>
-      <li><b>363K</b><span>TikTok likes</span></li>
-      <li><b>2</b><span>Platforms</span></li>
-    </ul>
-    <button type="button" class="more" id="more">Details</button>
-  </div>
-
-  <button type="button" class="arrow prev" id="prev" aria-label="Previous brand"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M24 14H4M12 6l-8 8 8 8"/></svg></button>
-  <button type="button" class="arrow next" id="next" aria-label="Next brand"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M4 14h20M16 6l8 8-8 8"/></svg></button>
+<!-- A fixed stage, back to front: page colour, my gameplay footage, giant words, Sage, live 3D, then the text. -->
+<div class="stage" aria-hidden="true">
+  <canvas id="film"></canvas>
+  <div class="tint"></div>
+  <span class="word" id="w-riscei">RISCEI</span>
+  <span class="word" id="w-beepo">BEEPO</span>
+  <span class="word" id="w-np">NOODLE &amp; PIP</span>
+  <span class="word" id="w-gg">GG</span>
+  <img class="sage" id="sage" src="media/sage-cut.webp" alt="" width="1000" height="1080">
+  <canvas id="gl"></canvas>
 </div>
 
-<!-- Detail sheets: the full numbers, one per brand. -->
-<aside class="sheet" data-for="0" aria-label="Riscei details" hidden>
-  <button type="button" class="close" aria-label="Close details">Close</button>
-  <h2>Riscei</h2>
-  <p class="lede">Immortal Battle Sage. Clips under a minute, each built around a hook, a payoff and a reason to watch again.</p>
-  <ul class="grid">
-    <li><b>24</b><span>Videos over 1M views</span></li>
-    <li><b>140</b><span>Videos over 100K views</span></li>
-    <li><b>250+</b><span>Videos posted</span></li>
-    <li><b>6</b><span>Brand partners</span></li>
-  </ul>
-  <h3>Featured videos</h3>
-  <ol class="bars">
-    <li><a href="https://www.tiktok.com/@riscei/video/7219430061529697582" target="_blank" rel="noopener noreferrer"><i style="--w:100%"></i><span>Valorant but with shaders</span><em><b>7.3M</b> views, 781K likes</em></a></li>
-    <li><a href="https://www.tiktok.com/@riscei/video/7449468866318634270" target="_blank" rel="noopener noreferrer"><i style="--w:44%"></i><span>Funny walls = free wins</span><em><b>3.2M</b> views, 235K likes</em></a></li>
-    <li><a href="https://www.tiktok.com/@riscei/video/7459338600744881438" target="_blank" rel="noopener noreferrer"><i style="--w:29%"></i><span>The best competitive keyboard, with IQUNIX</span><em><b>2.1M</b> views, 110K likes</em></a></li>
-    <li><a href="https://www.tiktok.com/@riscei/video/7657730966135344414" target="_blank" rel="noopener noreferrer"><i style="--w:25%"></i><span>Sage is in the trees</span><em><b>1.8M</b> views, 202K likes</em></a></li>
-    <li><a href="https://www.tiktok.com/@riscei/video/7354528400444378410" target="_blank" rel="noopener noreferrer"><i style="--w:10%"></i><span>This voice changer is insane, with Dubbing AI</span><em><b>734K</b> views, 47K likes</em></a></li>
-  </ol>
-  <h3>Brand partners</h3>
-  <p class="brands">IQUNIX, GravaStar, Dubbing AI, Moondrop, Wallhack, ATK</p>
-  <p><a class="pill solid" href="https://www.tiktok.com/@riscei" target="_blank" rel="noopener noreferrer">@riscei on TikTok</a></p>
-  <p class="fine">Numbers read from TikTok in November 2026. This site was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
-</aside>
+<header class="nav">
+  <a class="logo" href="#top">Bryce Nishida</a>
+  <nav aria-label="Rounds">
+    <a href="#riscei">Riscei</a>
+    <a href="#beepo">Beepo</a>
+    <a href="#noodle-pip">Noodle &amp; Pip</a>
+    <a href="#gg">Hire me</a>
+  </nav>
+</header>
+<div class="progress" aria-hidden="true"><i></i></div>
 
-<aside class="sheet" data-for="1" aria-label="Beepo details" hidden>
-  <button type="button" class="close" aria-label="Close details">Close</button>
-  <h2>Beepo Cat</h2>
-  <p class="lede">A character brand I created: a tiny bee-cat from another universe, with a new "What if..." episode every day.</p>
-  <ul class="grid">
-    <li><b>29K</b><span>Followers in the first month</span></li>
-    <li><b>107K</b><span>TikTok likes</span></li>
-    <li><b>4</b><span>Platforms</span></li>
-    <li><b>Daily</b><span>New episodes</span></li>
-  </ul>
-  <p>I also built the brand's website and shop, where families order their own cat as a 3D character.</p>
-  <p class="row">
-    <a class="pill solid" href="https://beepocat.com" target="_blank" rel="noopener noreferrer">beepocat.com</a>
-    <a class="pill" href="https://www.tiktok.com/@beepocat" target="_blank" rel="noopener noreferrer">TikTok</a>
-    <a class="pill" href="https://www.instagram.com/beepocat" target="_blank" rel="noopener noreferrer">Instagram</a>
-  </p>
-</aside>
+<!-- Everything a visitor reads. Each block is pinned in place and brought in and out by the scroll timeline in main.js. -->
+<main class="hud">
+  <section class="k tl" id="k-intro">
+    <p class="round">Round 01 / Riscei</p>
+    <h1>Bryce Nishida</h1>
+    <p class="say">I build audiences. Then I build the characters they follow.</p>
+    <p class="cue">Scroll to play</p>
+  </section>
 
-<aside class="sheet" data-for="2" aria-label="Noodle and Pip details" hidden>
-  <button type="button" class="close" aria-label="Close details">Close</button>
-  <h2>Noodle &amp; Pip</h2>
-  <p class="lede">One-minute 3D cat films. I am part of the team behind the brand.</p>
-  <ul class="grid">
-    <li><b>44K</b><span>Followers</span></li>
-    <li><b>363K</b><span>TikTok likes</span></li>
-    <li><b>27.9K</b><span>Instagram</span></li>
-    <li><b>16.3K</b><span>TikTok</span></li>
-  </ul>
-</aside>
+  <section class="k left" id="k-wall">
+    <h2 data-scramble>Wall up.</h2>
+    <p class="say">I main Sage and I post the proof. Clips under a minute: a hook, a payoff, a reason to watch it twice.</p>
+  </section>
 
-<noscript><p class="nojs">This page needs JavaScript for its slides. Find me at <a href="https://www.tiktok.com/@riscei">@riscei on TikTok</a> or <a href="https://beepocat.com">beepocat.com</a>.</p></noscript>
+  <p class="k stamp" id="k-ace" data-scramble>ACE.</p>
+  <div class="k stat s1" id="s-views"><b>99M+</b><span>views, no smurf</span></div>
+  <div class="k stat s2" id="s-foll"><b>164.9K</b><span>followers</span></div>
+  <div class="k stat s3" id="s-likes"><b>10.2M</b><span>likes</span></div>
+  <div class="k stat s4" id="s-mil"><b>24</b><span>videos past a million</span></div>
+  <p class="k cta" id="c-riscei"><a class="btn" href="https://www.tiktok.com/@riscei" target="_blank" rel="noopener noreferrer">Watch the clips</a></p>
 
+  <section class="k left" id="k-beepo">
+    <p class="round">Round 02 / Beepo Cat</p>
+    <h2 data-scramble>A bee. A cat. A daily problem.</h2>
+    <p class="say">A character brand I made from nothing. One new "What if..." episode every single day.</p>
+  </section>
+  <div class="k stat s1" id="b-foll"><b>29K</b><span>followers in month one</span></div>
+  <div class="k stat s3" id="b-likes"><b>107K</b><span>TikTok likes</span></div>
+  <div class="k stat s4" id="b-plat"><b>4</b><span>platforms, one bee</span></div>
+  <p class="k cta" id="c-beepo"><a class="btn" href="https://beepocat.com" target="_blank" rel="noopener noreferrer">Meet the bee</a></p>
+
+  <section class="k left" id="k-np">
+    <p class="round">Round 03 / Noodle &amp; Pip</p>
+    <h2 data-scramble>Big cat. Small cat. One minute.</h2>
+    <p class="say">One-minute 3D cat films. I am part of the team behind them.</p>
+  </section>
+  <div class="k stat s1" id="n-foll"><b>44K</b><span>followers</span></div>
+  <div class="k stat s3" id="n-likes"><b>363K</b><span>TikTok likes</span></div>
+
+  <section class="k mid" id="k-gg">
+    <p class="round">Match point</p>
+    <h2 data-scramble>GG. Queue with me.</h2>
+    <p class="say">Open to social media marketing and content roles. Based in Hawaii.</p>
+    <p class="links">
+      <a class="btn" href="https://linktr.ee/riscei" target="_blank" rel="noopener noreferrer">Send the invite</a>
+      <a class="btn ghost" href="https://www.tiktok.com/@riscei" target="_blank" rel="noopener noreferrer">@riscei</a>
+      <a class="btn ghost" href="https://beepocat.com" target="_blank" rel="noopener noreferrer">beepocat.com</a>
+    </p>
+    <p class="fine">Numbers read from TikTok in November 2026. This site was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+  </section>
+</main>
+
+<!-- The scroll track: its height is the length of the film. The anchors mark where each round starts. -->
+<div class="track" id="track">
+  <i id="top" style="top:0"></i>
+  <i id="riscei" style="top:9%"></i>
+  <i id="beepo" style="top:38.5%"></i>
+  <i id="noodle-pip" style="top:66%"></i>
+  <i id="gg" style="top:89%"></i>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="lib/ScrollTrigger.min.js"></script>
 <script src="lib/three-vendor.js"></script>
 <script src="lib/pov-lite.js"></script>
 <script src="lib/pov-beepo.js"></script>
