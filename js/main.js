@@ -61,7 +61,7 @@
   var FB = { t: 0, dt: 0, px: 0, py: 0, d: 0, fin: 1, walk: 0, moving: 0, tap: 0 };
   var FC = { t: 0, dt: 0, px: 0, py: 0, d: 0, fin: 1, walk: 0, moving: 0, tap: 0, mode: "walk" };
   function render3D(t, dt) {
-    var portrait = !wide, k = portrait ? Math.max(1, 0.8 / camera.aspect) : 1;
+    var portrait = !wide, k = portrait ? Math.max(1, 0.8 / camera.aspect) * (S.nvis > 0.5 && S.fin < 0.5 ? 1.3 : 1) : 1;   // the cats are long: pull back further for them on a phone
     var dist = S.dist * k, ce = Math.cos(S.el), shift = portrait ? 0 : S.shift;
     var rx = Math.cos(S.az), rz = -Math.sin(S.az);                                   // the camera's right-hand direction
     var lx = -shift * rx, lz = -shift * rz, ly = S.ty + (portrait ? 0.1 * dist / 2.4 : 0) + S.low * (portrait ? 1.05 : 0.62);   // look beside the subject so it sits off-centre
