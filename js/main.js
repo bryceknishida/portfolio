@@ -1,6 +1,6 @@
 /* main.js: the scroll film. One GSAP timeline, scrubbed by the scroll position, drives everything:
  * the 3D camera and characters, the giant words and every block of text.
- * The timeline is 100 units long. Rhythm: travel, then hold. Text only arrives during a hold. */
+ * The timeline is 129 units long. Rhythm: travel, then hold. Text only arrives during a hold. */
 (function () {
   "use strict";
   var root = document.documentElement, body = document.body;
@@ -116,6 +116,7 @@
   function countUp(el) {
     if (calm) return;
     [].forEach.call(el.querySelectorAll("b"), function (b) {
+      if (b.children.length) return;
       var text = b.dataset.t || (b.dataset.t = b.textContent), m = /^([\d.]+)(.*)$/.exec(text);
       if (!m) return;
       var end = parseFloat(m[1]), dec = (m[1].split(".")[1] || "").length, t0 = performance.now();
@@ -164,7 +165,7 @@
     defaults: { ease: "power3.out", duration: 2.4 },
     scrollTrigger: { trigger: "#track", start: "top top", end: "bottom bottom", scrub: calm ? true : 0.9, invalidateOnRefresh: true,
       onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; speed = self.getVelocity(); } },
-    onUpdate: function () { var p = this.progress(); body.classList.toggle("light", p > 0.322 && p < 0.782); }   // follows the smoothed timeline, not the raw scroll
+    onUpdate: function () { var p = this.progress(); body.classList.toggle("light", p > 0.302 && p < 0.796); }   // follows the smoothed timeline, not the raw scroll
   });
   // GSAP owns the transform of everything it moves, so centring and the cards' resting tilt are set here, not in CSS.
   var TILT = { s1: -5, s2: 4, s3: 5, s4: -4 };
@@ -172,7 +173,7 @@
     gsap.set(".word, .stamp", { xPercent: -50, yPercent: -50 });
     gsap.set("#sage, .cta, .k.mid, .board, .cap", { xPercent: -50 });
     gsap.set(".board", { yPercent: -50 });
-    gsap.set(".k.left", { yPercent: wide ? -50 : 0 });
+    gsap.set(".k.left, .k.reelk", { yPercent: wide ? -50 : 0 });
   }
   anchor();
   // Bring a block in from one side during a hold, then send it out another way.
@@ -180,7 +181,7 @@
     var el = document.querySelector(sel), rest = 0;
     if (!el) return;   // a block missing from the page must never take the whole timeline down with it
     for (var key in TILT) if (el.classList.contains(key)) rest = TILT[key];
-    var fade = el.querySelector("a") ? "autoAlpha" : "opacity", a = {}, b = {}, c = {};
+    var fade = el.querySelector("a, button") ? "autoAlpha" : "opacity", a = {}, b = {}, c = {};
     a[fade] = 0; b[fade] = 1; c[fade] = 0;
     tl.fromTo(el, Object.assign(a, { x: from.x || 0, y: from.y || 0, scale: from.s || 1, rotation: from.r || 0 }),
                   Object.assign(b, { x: 0, y: 0, scale: 1, rotation: rest, duration: from.d || 2.2, ease: from.e || "power3.out" }), tin);
@@ -200,12 +201,12 @@
     .to("#w-riscei", { scale: 1.7, autoAlpha: 0, duration: 5, ease: "power2.in" }, 14);
   show("#k-ace", 22, 29.2, { s: 2.6, d: 1.6, e: "expo.out" }, { s: 0.5 });
   show("#k-cap", 22.8, 29.1, { y: 50 }, { y: 50 });
-  show("#s-views", 23.0, 29.0, { x: -260, r: -14 }, { x: -320 });
+  show("#s-views", 23, 29, { x: -260, r: -14 }, { x: -320 });
   show("#s-likes", 23.5, 29.2, { x: 260, r: 14 }, { x: 320 });
-  show("#s-foll", 24.0, 29.4, { y: 220, r: 10 }, { y: 260 });
+  show("#s-foll", 24, 29.4, { y: 220, r: 10 }, { y: 260 });
   show("#s-mil", 24.5, 29.6, { y: -220, r: -10 }, { y: -260 });
   // The scoreboard.
-  show("#k-board", 30.2, 36.0, { y: 140 }, { y: -120 });
+  show("#k-board", 30.2, 36, { y: 140 }, { y: -120 });
   show("#c-riscei", 31.4, 36.2, { y: 80 }, { y: 80 });
   tl.to("#sage", { autoAlpha: 0, duration: 3, ease: "power1.in" }, 35.6)
     .to("#wipe-b", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 36.2);
@@ -220,41 +221,71 @@
     .to("#w-beepo", { x: function () { return -W() * 0.2; }, duration: 7, ease: none }, 52.3);
   show("#b-foll", 58.6, 64, { x: -260, r: -14 }, { x: -320 });
   show("#b-likes", 59.1, 64.2, { x: 260, r: 14 }, { x: 320 });
-  show("#b-plat", 59.6, 64.4, { y: 220, r: -10 }, { y: 260 });
-  show("#c-beepo", 60.2, 64.6, { y: 80 }, { y: 80 });
-  tl.to(S, { az: 2.1, el: 1.18, dist: 2.3, ty: 0.1, duration: 5.4, ease: "power2.inOut" }, 64.4)
-    .to(S, { bwalk: 1, duration: 1.2 }, 65.4)
-    .to(S, { bx: -1.5, byaw: -1.57, duration: 4.2, ease: "power1.in" }, 65.6)
-    .to("#w-beepo", { autoAlpha: 0, scale: 0.7, duration: 4, ease: "power2.in" }, 64.6)
-    .to("#wipe-n", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 65.2);
+  show("#b-plat", 59.6, 63.9, { y: 220, r: -10 }, { y: 260 });
+  show("#c-beepo", 60.2, 64, { y: 80 }, { y: 80 });
+  // He steps back and to one side (down the screen on a phone) to make room for his most watched episodes.
+  tl.to(S, { az: 0.38, el: 0.12, dist: 1.95, ty: 0.2, shift: 0.52, low: 0.42, duration: 3.2, ease: "power2.inOut" }, 64.3);
+  show("#k-breel", 66, 71.6, { x: -160 }, { x: -110 });
+  tl.to(S, { az: 2.1, el: 1.18, dist: 2.3, ty: 0.1, shift: 0, low: 0, duration: 5.4, ease: "power2.inOut" }, 72.4)
+    .to(S, { bwalk: 1, duration: 1.2 }, 73.4)
+    .to(S, { bx: -1.5, byaw: -1.57, duration: 4.2, ease: "power1.in" }, 73.6)
+    .to("#w-beepo", { autoAlpha: 0, scale: 0.7, duration: 4, ease: "power2.in" }, 72.6)
+    .to("#wipe-n", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 73.2);
 
   // ---- Round 03, Noodle and Pip: they walk in from the left with your scroll, stop, and look at you.
-  tl.set(S, { bvis: 0, bwalk: 0, nvis: 1, nmode: 1, nx: -2.3, nmove: 1, nyaw: 0, az: 0, el: 0.07, dist: 2.5, ty: 0.17, shift: 0 }, 70.2)
-    .to(S, { nx: 0.05, duration: 7, ease: none }, 70.3)
-    .fromTo("#w-np", { autoAlpha: 0, x: function () { return -W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 6 }, 70.3)
-    .to(S, { nmove: 0, shift: 0.32, duration: 1.4 }, 76.6);
-  show("#k-np", 77.2, 82, { x: -120 }, { x: -80 });
-  tl.to(S, { az: -0.75, el: 0.2, dist: 1.75, shift: 0, duration: 6, ease: "power2.inOut" }, 82.1)
-    .set(S, { nmode: 0 }, 83.6)
-    .to("#w-np", { x: function () { return W() * 0.12; }, duration: 6, ease: none }, 82.1);
-  show("#n-foll", 87.4, 92.2, { x: -260, r: -14 }, { x: -320 });
-  show("#n-likes", 87.9, 92.4, { x: 260, r: 14 }, { x: 320 });
-  tl.to("#w-np", { autoAlpha: 0, scale: 0.7, duration: 3.4, ease: "power2.in" }, 92.2)
-    .to("#wipe-e", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 92.2);
+  tl.set(S, { bvis: 0, bwalk: 0, nvis: 1, nmode: 1, nx: -2.3, nmove: 1, nyaw: 0, az: 0, el: 0.07, dist: 2.5, ty: 0.17, shift: 0 }, 78.2)
+    .to(S, { nx: 0.05, duration: 7, ease: none }, 78.3)
+    .fromTo("#w-np", { autoAlpha: 0, x: function () { return -W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 6 }, 78.3)
+    .to(S, { nmove: 0, shift: 0.32, duration: 1.4 }, 84.6);
+  show("#k-np", 85.2, 90, { x: -120 }, { x: -80 });
+  tl.to(S, { az: -0.75, el: 0.2, dist: 1.75, shift: 0, duration: 6, ease: "power2.inOut" }, 90.1)
+    .set(S, { nmode: 0 }, 91.6)
+    .to("#w-np", { x: function () { return W() * 0.12; }, duration: 6, ease: none }, 90.1);
+  show("#n-foll", 95.4, 100.2, { x: -260, r: -14 }, { x: -320 });
+  show("#n-likes", 95.9, 100.4, { x: 260, r: 14 }, { x: 320 });
+  tl.to("#w-np", { autoAlpha: 0, scale: 0.7, duration: 3.4, ease: "power2.in" }, 100.2)
+    .to("#wipe-e", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 100.2);
 
   // ---- Match point: everyone on stage together.
-  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.4, ty: 0.66, fin: 1, duration: 5, ease: "power2.inOut" }, 92.4)
-    .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 93.2)
-    .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 93.3)
-    .to(S, { ty: 0.72, dist: 3.6, duration: 3 }, 95);   // the cast drops lower to leave the top two thirds for words
+  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.4, ty: 0.66, fin: 1, duration: 5, ease: "power2.inOut" }, 100.4)
+    .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 101.2)
+    .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 101.3)
+    .to(S, { ty: 0.72, dist: 3.6, duration: 3 }, 103);   // the cast drops lower to leave the top two thirds for words
   // Three holds on the dark ending: the case for hiring me, who I am, then how to reach me.
   // While the two text-heavy holds are up, the cast sinks out of the way (right off the bottom on a phone), then comes back for the goodbye.
-  tl.to(S, { low: 1, duration: 2.4, ease: "power2.inOut" }, 96.2).to(S, { low: 0, duration: 3, ease: "power2.out" }, 109.6);
-  show("#k-why", 97.5, 103.6, { y: 90 }, { y: -70 });
-  show("#k-about", 104.6, 110.6, { y: 90 }, { y: -70 });
-  tl.fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 4 }, 110.4);
-  show("#k-gg", 111.6, null, { y: 90 });
-  tl.to({}, { duration: 6 }, 115);            // the last hold, so the end of the page is still
+  tl.to(S, { low: 1, duration: 2.4, ease: "power2.inOut" }, 104.2).to(S, { low: 0, duration: 3, ease: "power2.out" }, 117.6);
+  show("#k-why", 105.5, 111.6, { y: 90 }, { y: -70 });
+  show("#k-about", 112.6, 118.6, { y: 90 }, { y: -70 });
+  tl.fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 4 }, 118.4);
+  show("#k-gg", 119.6, null, { y: 90 });
+  tl.to({}, { duration: 6 }, 123);            // the last hold, so the end of the page is still
+
+  /* ---------------------------------------------------------------- video player: a card opens TikTok's own player in a sheet.
+     Nothing from TikTok loads until a visitor asks for a video. Without this script each card is a plain link to the video. */
+  var player = document.getElementById("player"), pbox = player && player.querySelector(".player-box"), pframe = null, opener = null;
+  function behind(off) { [".nav", ".hud"].forEach(function (s) { var el = document.querySelector(s); if (el) el.inert = off; }); }
+  function closePlayer() {
+    if (!player || player.hidden) return;
+    player.hidden = true; if (pframe) { pframe.remove(); pframe = null; } root.style.overflow = ""; behind(false);
+    if (opener) opener.focus({ preventScroll: true }); opener = null;
+  }
+  if (player) {
+    document.addEventListener("click", function (e) {
+      var c = e.target.closest && e.target.closest(".clip");
+      if (c && c.dataset.id && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button)) {
+        e.preventDefault(); opener = c;
+        document.getElementById("player-link").href = c.href;
+        if (pframe) pframe.remove();
+        pframe = document.createElement("iframe");
+        pframe.title = "TikTok video"; pframe.allow = "autoplay; fullscreen; encrypted-media"; pframe.allowFullscreen = true;
+        pframe.src = "https://www.tiktok.com/player/v1/" + encodeURIComponent(c.dataset.id) + "?autoplay=1&rel=0&music_info=0&description=0";
+        pbox.insertBefore(pframe, pbox.firstChild);
+        player.hidden = false; root.style.overflow = "hidden"; behind(true);       // the page must not scrub while a video is open
+        document.getElementById("player-close").focus({ preventScroll: true });
+      } else if (e.target === player || (e.target.closest && e.target.closest("#player-close"))) closePlayer();
+    });
+    window.addEventListener("keydown", function (e) { if (e.key === "Escape") closePlayer(); });
+  }
 
   /* ---------------------------------------------------------------- boot */
   var lastW = vw, lastH = vh;
