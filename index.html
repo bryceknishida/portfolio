@@ -18,13 +18,18 @@
 <div class="stage" aria-hidden="true">
   <canvas id="film"></canvas>
   <div class="tint"></div>
+  <i class="wipe" id="wipe-b"></i>
+  <i class="wipe" id="wipe-n"></i>
+  <i class="wipe" id="wipe-e"></i>
   <span class="word" id="w-riscei">RISCEI</span>
   <span class="word" id="w-beepo">BEEPO</span>
   <span class="word" id="w-np">NOODLE &amp; PIP</span>
-  <span class="word" id="w-gg">GG</span>
+  <span class="word" id="w-gg">HELLO</span>
   <img class="sage" id="sage" src="media/sage-cut.webp" alt="" width="1000" height="1080">
   <canvas id="gl"></canvas>
+  <canvas id="fx"></canvas>
 </div>
+<div class="glow" aria-hidden="true"></div>
 
 <header class="nav">
   <a class="logo" href="#top">Bryce Nishida</a>
@@ -47,12 +52,12 @@
   </section>
 
   <section class="k left" id="k-wall">
-    <h2 data-scramble>Wall up.</h2>
-    <p class="say">I main Sage and I post the proof. Clips under a minute: a hook, a payoff, a reason to watch it twice.</p>
+    <h2 data-scramble>Clips people replay.</h2>
+    <p class="say">I main Sage and I post the proof. Every clip has a hook, a payoff and a reason to watch it twice.</p>
   </section>
 
   <p class="k stamp" id="k-ace" data-scramble>ACE.</p>
-  <div class="k stat s1" id="s-views"><b>99M+</b><span>views, no smurf</span></div>
+  <div class="k stat s1" id="s-views"><b>99M+</b><span>total views</span></div>
   <div class="k stat s2" id="s-foll"><b>164.9K</b><span>followers</span></div>
   <div class="k stat s3" id="s-likes"><b>10.2M</b><span>likes</span></div>
   <div class="k stat s4" id="s-mil"><b>24</b><span>videos past a million</span></div>
@@ -88,15 +93,15 @@
   <div class="k stat s3" id="n-likes"><b>363K</b><span>TikTok likes</span></div>
 
   <section class="k mid" id="k-gg">
-    <p class="round">Match point</p>
-    <h2 data-scramble>GG. Queue with me.</h2>
+    <p class="round">Contact</p>
+    <h2 data-scramble>Let's work together.</h2>
     <p class="say">Open to social media marketing and content roles. Based in Hawaii.</p>
     <p class="links">
-      <a class="btn" href="https://linktr.ee/riscei" target="_blank" rel="noopener noreferrer">Send the invite</a>
+      <a class="btn" href="https://linktr.ee/riscei" target="_blank" rel="noopener noreferrer">Get in touch</a>
       <a class="btn ghost" href="https://www.tiktok.com/@riscei" target="_blank" rel="noopener noreferrer">@riscei</a>
       <a class="btn ghost" href="https://beepocat.com" target="_blank" rel="noopener noreferrer">beepocat.com</a>
     </p>
-    <p class="fine">Numbers read from TikTok in November 2026. This site was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+    <p class="fine">Riscei numbers read from TikTok in November 2026. This site was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
   </section>
 </main>
 
@@ -108,6 +113,8 @@
   <i id="noodle-pip" style="top:66.5%"></i>
   <i id="gg" style="top:90%"></i>
 </div>
+
+<noscript><style>.k{position:static!important;opacity:1!important;visibility:visible!important;transform:none!important;margin:8vh 6vw!important;width:auto!important;max-width:40em}.stamp{font-size:64px!important}.hud{position:relative!important;color:#fff}.stage,.track,.progress{display:none!important}</style></noscript>
 
 <script src="lib/gsap.min.js"></script>
 <script src="lib/ScrollTrigger.min.js"></script>

@@ -21,13 +21,14 @@
   var film = document.getElementById("film"), fctx = film.getContext("2d"), FRAMES = 152, frames = [], drawn = -1;
   function loadFrames() {
     var i = 0;
-    (function next() {
+    function next() {
       if (i >= FRAMES) return;
       var img = new Image(), n = i++;
-      img.onload = function () { frames[n] = img; if (n === 0 || n === Math.round(S.frame)) drawn = -1; next(); };
+      img.onload = function () { frames[n] = img; drawn = -1; next(); };
       img.onerror = next;
       img.src = "media/film/f_" + ("00" + n).slice(-3) + ".webp";
-    })();
+    }
+    for (var lane = 0; lane < 6; lane++) next();
   }
   function drawFilm() {
     var want = clamp(Math.round(S.frame), 0, FRAMES - 1), f = want;
@@ -110,6 +111,7 @@
     px = lerp(px, tx, 0.08); py = lerp(py, ty, 0.08);
     if (tap > 0) tap = Math.max(0, tap - dt / 0.6);
     drawFilm();
+    drawFx(dt);
     if (renderer && (S.bvis > 0.5 || S.nvis > 0.5)) render3D(calm ? 0 : t, calm ? 0 : dt);
     else if (renderer && canvas.dataset.clear !== "1") { renderer.clear(); canvas.dataset.clear = "1"; }
     if (S.bvis > 0.5 || S.nvis > 0.5) canvas.dataset.clear = "0";
@@ -134,19 +136,59 @@
     })(t0);
   }
 
+  /* ---------------------------------------------------------------- numbers count up as their card lands */
+  function countUp(el) {
+    if (calm) return;
+    [].forEach.call(el.querySelectorAll("b"), function (b) {
+      var text = b.dataset.t || (b.dataset.t = b.textContent), m = /^([\d.]+)(.*)$/.exec(text);
+      if (!m) return;
+      var end = parseFloat(m[1]), dec = (m[1].split(".")[1] || "").length, t0 = performance.now();
+      (function step(now) {
+        var k = clamp((now - t0) / 900), e = 1 - Math.pow(1 - k, 4);
+        b.textContent = k < 1 ? (end * e).toFixed(dec) + m[2] : text;
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    });
+  }
+
+  /* ---------------------------------------------------------------- sparks: they drift up slowly and stretch into streaks when you scroll fast */
+  var fx = document.getElementById("fx"), xctx = fx.getContext("2d"), sparks = [], speed = 0, lean = 0, hud = document.querySelector(".hud");
+  function sizeFx() {
+    var d = Math.min(window.devicePixelRatio || 1, 1.5); fx.width = Math.round(vw * d); fx.height = Math.round(vh * d);
+    var n = wide ? 70 : 34; sparks.length = 0;
+    for (var i = 0; i < n; i++) sparks.push({ x: Math.random() * fx.width, y: Math.random() * fx.height, r: (0.6 + Math.random() * 1.8) * d, v: 0.15 + Math.random() * 0.5, a: 0.25 + Math.random() * 0.6 });
+  }
+  function drawFx(dt) {
+    speed *= 0.9;                                                   // scroll speed decays between scroll events
+    var push = clamp(speed / 2400, -1.6, 1.6), light = body.classList.contains("light");
+    lean = lerp(lean, calm ? 0 : clamp(-speed / 1100, -3.2, 3.2), 0.12);
+    hud.style.transform = Math.abs(lean) > 0.02 ? "skewY(" + lean.toFixed(2) + "deg)" : "";
+    xctx.clearRect(0, 0, fx.width, fx.height);
+    if (calm) return;
+    xctx.lineCap = "round"; xctx.strokeStyle = light ? "#ffffff" : "#7df5dc";
+    for (var i = 0; i < sparks.length; i++) {
+      var s = sparks[i], len = s.r + Math.abs(push) * 46 * s.v;
+      s.y -= (s.v * 26 + push * 620 * s.v) * dt;
+      if (s.y < -60) { s.y = fx.height + 40; s.x = Math.random() * fx.width; } else if (s.y > fx.height + 60) { s.y = -40; s.x = Math.random() * fx.width; }
+      xctx.globalAlpha = s.a; xctx.lineWidth = s.r * 2;
+      xctx.beginPath(); xctx.moveTo(s.x, s.y); xctx.lineTo(s.x, s.y + len); xctx.stroke();
+    }
+    xctx.globalAlpha = 1;
+  }
+
   /* ---------------------------------------------------------------- the timeline */
   var gsap = window.gsap, ScrollTrigger = window.ScrollTrigger;
   if (!gsap || !ScrollTrigger) {            // without the timeline, show the words plainly instead of nothing
-    [].forEach.call(document.querySelectorAll(".k"), function (k) { k.style.cssText = "position:static;opacity:1;visibility:visible;translate:none;rotate:none;margin:8vh 6vw;"; });
-    document.querySelector(".hud").style.position = "static"; document.getElementById("track").style.display = "none";
+    root.classList.add("plain");
     return;
   }
   gsap.registerPlugin(ScrollTrigger);
   var bar = document.querySelector(".progress i");
   var tl = gsap.timeline({
     defaults: { ease: "power3.out", duration: 2.4 },
-    scrollTrigger: { trigger: "#track", start: "top top", end: "bottom bottom", scrub: calm ? true : 0.9,
-      onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; body.classList.toggle("light", self.progress > 0.365); } }
+    scrollTrigger: { trigger: "#track", start: "top top", end: "bottom bottom", scrub: calm ? true : 0.9, invalidateOnRefresh: true,
+      onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; speed = self.getVelocity(); } },
+    onUpdate: function () { var p = this.progress(); body.classList.toggle("light", p > 0.365 && p < 0.885); }   // follows the smoothed timeline, not the raw scroll
   });
   // GSAP owns the transform of everything it moves, so centring and the cards' resting tilt are set here, not in CSS.
   var TILT = { s1: -5, s2: 4, s3: 5, s4: -4 };
@@ -161,17 +203,20 @@
   function show(sel, tin, tout, from, to) {
     var el = document.querySelector(sel), rest = 0;
     for (var key in TILT) if (el.classList.contains(key)) rest = TILT[key];
-    tl.fromTo(el, { autoAlpha: 0, x: from.x || 0, y: from.y || 0, scale: from.s || 1, rotation: from.r || 0 },
-                  { autoAlpha: 1, x: 0, y: 0, scale: 1, rotation: rest, duration: from.d || 2.2, ease: from.e || "power3.out" }, tin);
+    var fade = el.querySelector("a") ? "autoAlpha" : "opacity", a = {}, b = {}, c = {};
+    a[fade] = 0; b[fade] = 1; c[fade] = 0;
+    tl.fromTo(el, Object.assign(a, { x: from.x || 0, y: from.y || 0, scale: from.s || 1, rotation: from.r || 0 }),
+                  Object.assign(b, { x: 0, y: 0, scale: 1, rotation: rest, duration: from.d || 2.2, ease: from.e || "power3.out" }), tin);
     tl.call(scramble, [el], tin + 0.2);
-    if (tout !== null) tl.to(el, { autoAlpha: 0, x: (to && to.x) || 0, y: (to && to.y) || 0, scale: (to && to.s) || 1, duration: 1.6, ease: "power2.in" }, tout);
+    tl.call(countUp, [el], tin + 0.1);
+    if (tout !== null) tl.to(el, Object.assign(c, { x: (to && to.x) || 0, y: (to && to.y) || 0, scale: (to && to.s) || 1, duration: 1.6, ease: "power2.in" }), tout);
   }
   var none = "none", W = function () { return vw; }, H = function () { return vh; };
 
   // ---- Round 01, Riscei: my real footage scrubs under Sage. The wall goes up because you scrolled.
-  gsap.set("#film", { opacity: 1 }); gsap.set("#w-riscei", { autoAlpha: 1 }); gsap.set("#k-intro", { autoAlpha: 1 });
+  gsap.set("#film", { opacity: 1 }); gsap.set("#w-riscei", { autoAlpha: 1 }); gsap.set("#k-intro", { opacity: 1 });
   tl.to(S, { frame: 46, duration: 9, ease: none }, 0)
-    .to("#k-intro", { autoAlpha: 0, y: -50, duration: 2, ease: "power2.in" }, 2.2)
+    .to("#k-intro", { opacity: 0, y: -50, duration: 2, ease: "power2.in" }, 2.2)
     .to("#sage", { x: function () { return wide ? W() * 0.2 : 0; }, y: function () { return wide ? 0 : H() * 0.05; }, scale: 0.94, duration: 9, ease: "power1.inOut" }, 0)
     .to("#w-riscei", { x: function () { return -W() * 0.07; }, duration: 9, ease: none }, 0)
     .to(S, { frame: 60, duration: 4.5, ease: none }, 9);
@@ -192,7 +237,7 @@
   show("#c-riscei", 31.4, 36.2, { y: 80 }, { y: 80 });
   tl.to("#film", { opacity: 0, duration: 5, ease: "power1.inOut" }, 36.5)
     .to(".tint", { opacity: 0, duration: 4 }, 36.5)
-    .to(body, { backgroundColor: "#f4cf63", duration: 5, ease: "power1.inOut" }, 36.5);
+    .to("#wipe-b", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 36.2);
 
   // ---- Round 02, Beepo: he drops in, the camera pushes round to his face, then cranes overhead as he trots off.
   tl.set(S, { bvis: 1, bx: 0, by: 1.5, byaw: -0.5, az: -0.6, el: 0.34, dist: 3.3, ty: 0.19, shift: 0 }, 41.4)
@@ -210,7 +255,7 @@
     .to(S, { bwalk: 1, duration: 1.2 }, 65.4)
     .to(S, { bx: -1.5, byaw: -1.57, duration: 4.2, ease: "power1.in" }, 65.6)
     .to("#w-beepo", { autoAlpha: 0, scale: 0.7, duration: 4, ease: "power2.in" }, 64.6)
-    .to(body, { backgroundColor: "#b9e3d6", duration: 5, ease: "power1.inOut" }, 65.4);
+    .to("#wipe-n", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 65.2);
 
   // ---- Round 03, Noodle and Pip: they walk in from the left with your scroll, stop, and look at you.
   tl.set(S, { bvis: 0, bwalk: 0, nvis: 1, nmode: 1, nx: -2.3, nmove: 1, nyaw: 0, az: 0, el: 0.07, dist: 2.5, ty: 0.17, shift: 0 }, 70.2)
@@ -224,19 +269,28 @@
   show("#n-foll", 87.4, 92.2, { x: -260, r: -14 }, { x: -320 });
   show("#n-likes", 87.9, 92.4, { x: 260, r: 14 }, { x: 320 });
   tl.to("#w-np", { autoAlpha: 0, scale: 0.7, duration: 3.4, ease: "power2.in" }, 92.2)
-    .to(body, { backgroundColor: "#efe2d4", duration: 5, ease: "power1.inOut" }, 92.4);
+    .to("#wipe-e", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 92.2);
 
   // ---- Match point: everyone on stage together.
-  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.3, ty: 0.56, fin: 1, duration: 5, ease: "power2.inOut" }, 92.4)
+  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.4, ty: 0.66, fin: 1, duration: 5, ease: "power2.inOut" }, 92.4)
     .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 93.2)
     .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 93.3)
-    .fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 0.5, scale: 1, duration: 4 }, 94);
+    .fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 4 }, 94);
   show("#k-gg", 97.5, null, { y: 90 });
   tl.to({}, { duration: 6 }, 101);            // the last hold, so the end of the page is still
 
   /* ---------------------------------------------------------------- boot */
-  function resize() { size(); sizeFilm(); sizeGL(); anchor(); ScrollTrigger.refresh(); }
-  sizeFilm(); sizeGL(); loadFrames();
+  var lastW = vw, lastH = vh;
+  function resize() {
+    var w = window.innerWidth, h = window.innerHeight;
+    if (w === lastW && Math.abs(h - lastH) < 160) return;
+    lastW = w; lastH = h;
+    size(); sizeFilm(); sizeFx(); sizeGL(); anchor(); ScrollTrigger.refresh();
+  }
+  sizeFilm(); sizeFx(); sizeGL(); loadFrames();
+  // Pointer glow: two quick setters keep it trailing the cursor without a tween per event.
+  var glow = document.querySelector(".glow"), gx = gsap.quickTo(glow, "x", { duration: 0.5, ease: "power3" }), gy = gsap.quickTo(glow, "y", { duration: 0.5, ease: "power3" });
+  window.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") { glow.style.opacity = 1; gx(e.clientX); gy(e.clientY); } }, { passive: true });
   window.addEventListener("resize", function () { clearTimeout(resize.t); resize.t = setTimeout(resize, 160); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   if (!calm) gsap.from(".stage, .hud, .nav", { autoAlpha: 0, duration: 1.1, ease: "power2.out" });

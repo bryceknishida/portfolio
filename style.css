@@ -1,7 +1,8 @@
 /* Scroll film. One fixed stage; the scroll position drives a single timeline (main.js) that moves the camera,
    the characters, the footage and every block of text. Nothing here animates on its own except hover states. */
 html, body { margin: 0; background: #0c2b2a; }
-html { overflow-x: clip; scrollbar-width: none; scroll-behavior: smooth; }
+html { overflow-x: clip; scrollbar-width: none; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 html::-webkit-scrollbar { display: none; }
 :root { --fg: #ffffff; --accent: #5ff0d2; --ink: #06201f; }
 * { box-sizing: border-box; }
@@ -9,18 +10,32 @@ body { transition: color 500ms; font-family: Poppins, system-ui, -apple-system, 
 ::selection { background: rgba(255, 255, 255, 0.3); }
 a { color: inherit; }
 
+html.plain .k { position: static !important; opacity: 1 !important; visibility: visible !important; transform: none !important; margin: 8vh 6vw !important; width: auto !important; max-width: 40em; }
+html.plain .stamp { font-size: 64px !important; }
+html.plain .hud { position: relative !important; }
+html.plain .stage, html.plain .track, html.plain .progress { display: none !important; }
+
 /* ------------------------------------------------------------ stage layers */
 .stage { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
 #film { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
 .tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 44, 42, 0.86), rgba(8, 44, 42, 0.62) 45%, rgba(8, 44, 42, 0.9)); }
 .word { position: absolute; left: 50%; top: 46%; white-space: nowrap; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; font-size: 30vw; color: #fff; opacity: 0; will-change: transform; }
-#w-np { font-size: 15.5vw; } #w-gg { font-size: 44vw; }
+#w-np { font-size: 15.5vw; } #w-gg { font-size: 30vw; color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.42); }
 /* Over footage the word is drawn as an outline, so the white text in front of it stays readable. */
 #w-riscei { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); }
 .sage { position: absolute; left: 50%; bottom: 0; height: min(88vh, 96vw); width: auto; will-change: transform;
   -webkit-mask-image: linear-gradient(#000 84%, transparent); mask-image: linear-gradient(#000 84%, transparent);
   filter: drop-shadow(0 30px 50px rgba(0, 20, 20, 0.5)); }
-#gl { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Each round's colour arrives as its own wipe: a slanted edge from the right, a slanted rise from below, then a circle opening. */
+.wipe { position: absolute; inset: 0; --w: 0; }
+#wipe-b { background: #f4cf63; clip-path: polygon(calc(130% - var(--w) * 160%) 0, 100% 0, 100% 100%, calc(100% - var(--w) * 160%) 100%); }
+#wipe-n { background: #b9e3d6; clip-path: polygon(0 calc(130% - var(--w) * 160%), 100% calc(100% - var(--w) * 160%), 100% 100%, 0 100%); }
+#wipe-e { background: radial-gradient(120% 90% at 50% 70%, #0f4a47, #071a24 62%); clip-path: circle(calc(var(--w) * 150%) at 50% 64%); }
+#gl, #fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* A soft light that follows the pointer. Desktop only. */
+.glow { position: fixed; z-index: 5; left: 0; top: 0; width: 560px; height: 560px; margin: -280px 0 0 -280px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.2), transparent); mix-blend-mode: soft-light; opacity: 0; }
+@media (hover: none) { .glow { display: none; } }
 html.no3d #gl { display: none; }
 
 /* ------------------------------------------------------------ nav and progress */
@@ -34,7 +49,7 @@ html.no3d #gl { display: none; }
 
 /* ------------------------------------------------------------ text blocks: fixed, placed by region, moved by the timeline */
 .hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
-.k { position: absolute; margin: 0; opacity: 0; visibility: hidden; will-change: transform, opacity; }
+.k { position: absolute; margin: 0; opacity: 0; will-change: transform, opacity; }
 .k a { pointer-events: auto; }
 .k.tl { left: clamp(18px, 4vw, 52px); top: 15vh; max-width: min(30em, 80vw); }
 .k.left { left: clamp(18px, 5vw, 76px); top: 50%; width: min(31vw, 460px); }
@@ -50,7 +65,7 @@ h2 { margin: 0; font-weight: 800; font-size: clamp(34px, 4.4vw, 68px); line-heig
 .stamp { left: 50%; top: 44%; font-weight: 800; font-size: clamp(120px, 30vw, 460px); line-height: 0.8; letter-spacing: -0.06em; color: #fff; text-shadow: 0 10px 80px rgba(0, 0, 0, 0.45); white-space: nowrap; }
 
 /* A stat is a small frosted card. The four slots sit round the hero so each can arrive from its own side. */
-.stat { padding: 16px 22px 15px; border-radius: 22px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.34);
+.stat { padding: 16px 22px 15px; border-radius: 22px; background: rgba(6, 26, 25, 0.5); border: 1px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2); }
 .stat b { display: block; font-weight: 800; font-size: clamp(34px, 4.4vw, 68px); line-height: 0.95; letter-spacing: -0.045em; font-variant-numeric: tabular-nums; }
 .stat span { display: block; margin-top: 8px; font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.9; white-space: nowrap; }
@@ -90,17 +105,25 @@ body.light .btn { background: #1d1512; color: #fff; border-color: #1d1512; } bod
   .k.mid { top: 9vh; }
   h2 { font-size: clamp(30px, 9vw, 46px); } .k.mid h2 { font-size: clamp(36px, 11vw, 58px); }
   .say { font-size: 15px; margin-top: 12px; }
-  .word { font-size: 34vw; top: 50%; } #w-np { font-size: 17vw; } #w-gg { font-size: 56vw; }
+  .word { font-size: 34vw; top: 50%; } #w-np { font-size: 17vw; } #w-gg { font-size: 36vw; }
   .sage { height: min(64vh, 118vw); }
   .stat { padding: 11px 15px 10px; border-radius: 16px; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12, 43, 42, 0.72); }
   body.light .stat { background: rgba(255, 255, 255, 0.82); }
-  .stat b { font-size: 30px; } .stat span { font-size: 9.5px; letter-spacing: 0.1em; }
-  .s1 { left: 14px; top: auto; bottom: 30vh; } .s2 { left: 14px; bottom: 19vh; }
-  .s3 { right: 14px; top: auto; bottom: 32vh; } .s4 { right: 14px; bottom: 20vh; }
+  .stat { max-width: 46vw; } .stat b { font-size: 28px; } .stat span { font-size: 11px; letter-spacing: 0.06em; white-space: normal; line-height: 1.25; }
+  .s1 { left: 12px; top: auto; bottom: calc(18vh + 96px); } .s2 { left: 12px; bottom: 18vh; }
+  .s3 { right: 12px; top: auto; bottom: calc(18vh + 104px); } .s4 { right: 12px; bottom: calc(18vh + 8px); }
+  .nav nav a { padding: 12px 2px; }
   .cta { bottom: 8vh; } .btn { padding: 13px 22px; font-size: 12.5px; }
   .board { top: 45%; padding: 16px 16px 6px; border-radius: 18px; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(6, 26, 25, 0.9); }
   .board a { grid-template-columns: 1.4em 1fr auto; gap: 10px; padding: 11px 2px; } .board em { display: none; } .board span { font-size: 14px; } .board b { font-size: 20px; }
   .fine { font-size: 10.5px; margin-top: 18px; }
+}
+
+/* Short, wide screens (a phone on its side): keep the text clear of the nav and drop the side cards lower. */
+@media (max-height: 480px) {
+  .k.left, .k.tl { top: max(12vh, 60px); } .k.mid { top: max(10vh, 54px); }
+  h2 { font-size: clamp(24px, 6vh, 40px); } .say { font-size: 14px; margin-top: 8px; } .fine { display: none; }
+  .cta { bottom: 4vh; } .stat b { font-size: 26px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
