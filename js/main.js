@@ -1,5 +1,5 @@
 /* main.js: the scroll film. One GSAP timeline, scrubbed by the scroll position, drives everything:
- * the gameplay footage frame, the 3D camera and characters, the giant words and every block of text.
+ * the 3D camera and characters, the giant words and every block of text.
  * The timeline is 100 units long. Rhythm: travel, then hold. Text only arrives during a hold. */
 (function () {
   "use strict";
@@ -13,32 +13,9 @@
   size();
 
   /* Everything the timeline animates that is not a DOM element lives on this one object. */
-  var S = { frame: 0, az: 0, el: 0.16, dist: 3, ty: 0.2, shift: 0,
+  var S = { az: 0, el: 0.16, dist: 3, ty: 0.2, shift: 0,
             bvis: 0, bx: 0, by: 0, byaw: 0, bwalk: 0,
             nvis: 0, nx: 0, nmove: 0, nmode: 1, nyaw: 0, fin: 0 };
-
-  /* ---------------------------------------------------------------- footage: an image sequence drawn to a canvas, one frame per scroll step */
-  var film = document.getElementById("film"), fctx = film.getContext("2d"), FRAMES = 152, frames = [], drawn = -1;
-  function loadFrames() {
-    var i = 0;
-    function next() {
-      if (i >= FRAMES) return;
-      var img = new Image(), n = i++;
-      img.onload = function () { frames[n] = img; drawn = -1; next(); };
-      img.onerror = next;
-      img.src = "media/film/f_" + ("00" + n).slice(-3) + ".webp";
-    }
-    for (var lane = 0; lane < 6; lane++) next();
-  }
-  function drawFilm() {
-    var want = clamp(Math.round(S.frame), 0, FRAMES - 1), f = want;
-    while (f > 0 && !frames[f]) f--;                       // fall back to the nearest earlier frame that has arrived
-    if (!frames[f] || f === drawn) return;
-    var img = frames[f], cw = film.width, ch = film.height, s = Math.max(cw / img.width, ch / img.height);
-    fctx.drawImage(img, (cw - img.width * s) / 2, (ch - img.height * s) / 2, img.width * s, img.height * s);
-    drawn = f;
-  }
-  function sizeFilm() { var d = Math.min(window.devicePixelRatio || 1, 1.5); film.width = Math.round(vw * d); film.height = Math.round(vh * d); drawn = -1; }
 
   /* ---------------------------------------------------------------- 3D: photographed, not pasted on */
   var THREE = window.THREE, Cast = window.Cast, canvas = document.getElementById("gl");
@@ -110,7 +87,6 @@
     var t = ms / 1000, dt = last ? Math.min(0.05, Math.max(0, t - last)) : 0.016; last = t;
     px = lerp(px, tx, 0.08); py = lerp(py, ty, 0.08);
     if (tap > 0) tap = Math.max(0, tap - dt / 0.6);
-    drawFilm();
     drawFx(dt);
     if (renderer && (S.bvis > 0.5 || S.nvis > 0.5)) render3D(calm ? 0 : t, calm ? 0 : dt);
     else if (renderer && canvas.dataset.clear !== "1") { renderer.clear(); canvas.dataset.clear = "1"; }
@@ -194,7 +170,7 @@
   var TILT = { s1: -5, s2: 4, s3: 5, s4: -4 };
   function anchor() {
     gsap.set(".word, .stamp", { xPercent: -50, yPercent: -50 });
-    gsap.set("#sage, .cta, .k.mid, .board", { xPercent: -50 });
+    gsap.set("#sage, .cta, .k.mid, .board, .cap", { xPercent: -50 });
     gsap.set(".board", { yPercent: -50 });
     gsap.set(".k.left", { yPercent: wide ? -50 : 0 });
   }
@@ -213,30 +189,24 @@
   }
   var none = "none", W = function () { return vw; }, H = function () { return vh; };
 
-  // ---- Round 01, Riscei: my real footage scrubs under Sage. The wall goes up because you scrolled.
-  gsap.set("#film", { opacity: 1 }); gsap.set("#w-riscei", { autoAlpha: 1 }); gsap.set("#k-intro", { opacity: 1 });
-  tl.to(S, { frame: 46, duration: 9, ease: none }, 0)
-    .to("#k-intro", { opacity: 0, y: -50, duration: 2, ease: "power2.in" }, 2.2)
+  // ---- Round 01, Riscei: Sage up front, then she dims into a backdrop for the numbers and the scoreboard.
+  gsap.set("#w-riscei", { autoAlpha: 1 }); gsap.set("#k-intro", { opacity: 1 });
+  tl.to("#k-intro", { opacity: 0, y: -50, duration: 2, ease: "power2.in" }, 2.2)
     .to("#sage", { x: function () { return wide ? W() * 0.2 : 0; }, y: function () { return wide ? 0 : H() * 0.05; }, scale: 0.94, duration: 9, ease: "power1.inOut" }, 0)
-    .to("#w-riscei", { x: function () { return -W() * 0.07; }, duration: 9, ease: none }, 0)
-    .to(S, { frame: 60, duration: 4.5, ease: none }, 9);
+    .to("#w-riscei", { x: function () { return -W() * 0.07; }, duration: 9, ease: none }, 0);
   show("#k-wall", 8.6, 13.4, { x: -120 }, { x: -80 });
-  tl.to(S, { frame: 118, duration: 8.5, ease: none }, 13.5)
-    .to("#sage", { x: function () { return W() * 0.85; }, rotation: 9, autoAlpha: 0, duration: 5, ease: "power2.in" }, 13.5)
-    .to(".tint", { opacity: 0.22, duration: 6, ease: none }, 13.5)
-    .to("#w-riscei", { scale: 1.7, autoAlpha: 0, duration: 5, ease: "power2.in" }, 14)
-    .to(S, { frame: 151, duration: 7, ease: none }, 22);
+  tl.to("#sage", { x: 0, y: function () { return H() * 0.06; }, scale: 1.2, autoAlpha: 0.22, duration: 7, ease: "power2.inOut" }, 13.5)
+    .to("#w-riscei", { scale: 1.7, autoAlpha: 0, duration: 5, ease: "power2.in" }, 14);
   show("#k-ace", 22, 29.2, { s: 2.6, d: 1.6, e: "expo.out" }, { s: 0.5 });
+  show("#k-cap", 22.8, 29.1, { y: 50 }, { y: 50 });
   show("#s-views", 23.0, 29.0, { x: -260, r: -14 }, { x: -320 });
   show("#s-likes", 23.5, 29.2, { x: 260, r: 14 }, { x: 320 });
   show("#s-foll", 24.0, 29.4, { y: 220, r: 10 }, { y: 260 });
   show("#s-mil", 24.5, 29.6, { y: -220, r: -10 }, { y: -260 });
-  // The scoreboard: the footage holds on the ace and dims so the list reads.
-  tl.to(".tint", { opacity: 0.86, duration: 2.4 }, 29.4);
+  // The scoreboard.
   show("#k-board", 30.2, 36.0, { y: 140 }, { y: -120 });
   show("#c-riscei", 31.4, 36.2, { y: 80 }, { y: 80 });
-  tl.to("#film", { opacity: 0, duration: 5, ease: "power1.inOut" }, 36.5)
-    .to(".tint", { opacity: 0, duration: 4 }, 36.5)
+  tl.to("#sage", { autoAlpha: 0, duration: 3, ease: "power1.in" }, 35.6)
     .to("#wipe-b", { "--w": 1, duration: 5.5, ease: "power2.inOut" }, 36.2);
 
   // ---- Round 02, Beepo: he drops in, the camera pushes round to his face, then cranes overhead as he trots off.
@@ -285,9 +255,9 @@
     var w = window.innerWidth, h = window.innerHeight;
     if (w === lastW && Math.abs(h - lastH) < 160) return;
     lastW = w; lastH = h;
-    size(); sizeFilm(); sizeFx(); sizeGL(); anchor(); ScrollTrigger.refresh();
+    size(); sizeFx(); sizeGL(); anchor(); ScrollTrigger.refresh();
   }
-  sizeFilm(); sizeFx(); sizeGL(); loadFrames();
+  sizeFx(); sizeGL();
   // Pointer glow: two quick setters keep it trailing the cursor without a tween per event.
   var glow = document.querySelector(".glow"), gx = gsap.quickTo(glow, "x", { duration: 0.5, ease: "power3" }), gy = gsap.quickTo(glow, "y", { duration: 0.5, ease: "power3" });
   window.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") { glow.style.opacity = 1; gx(e.clientX); gy(e.clientY); } }, { passive: true });

@@ -17,8 +17,8 @@ html.plain .stage, html.plain .track, html.plain .progress { display: none !impo
 
 /* ------------------------------------------------------------ stage layers */
 .stage { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
-#film { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
-.tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 44, 42, 0.86), rgba(8, 44, 42, 0.62) 45%, rgba(8, 44, 42, 0.9)); }
+/* The opening backdrop: a soft pool of teal light behind Sage on the dark page. */
+.tint { position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 62%, #12615a, rgba(12, 43, 42, 0) 70%); }
 .word { position: absolute; left: 50%; top: 46%; white-space: nowrap; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; font-size: 30vw; color: #fff; opacity: 0; will-change: transform; }
 #w-np { font-size: 15.5vw; } #w-gg { font-size: 30vw; color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.42); }
 /* Over footage the word is drawn as an outline, so the white text in front of it stays readable. */
@@ -62,6 +62,7 @@ h2 { margin: 0; font-weight: 800; font-size: clamp(34px, 4.4vw, 68px); line-heig
 .k.mid .say { margin-inline: auto; }
 .cue { margin: 34px 0 0; font-weight: 600; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.8; }
 .cue::after { content: ""; display: inline-block; width: 44px; height: 1px; margin-left: 14px; vertical-align: middle; background: currentColor; }
+/* The one number that matters most, as large as the screen allows. Its label is the card row around it. */
 .stamp { left: 50%; top: 44%; font-weight: 800; font-size: clamp(120px, 30vw, 460px); line-height: 0.8; letter-spacing: -0.06em; color: #fff; text-shadow: 0 10px 80px rgba(0, 0, 0, 0.45); white-space: nowrap; }
 
 /* A stat is a small frosted card. The four slots sit round the hero so each can arrive from its own side. */
@@ -82,6 +83,7 @@ h2 { margin: 0; font-weight: 800; font-size: clamp(34px, 4.4vw, 68px); line-heig
 .board b { font-weight: 800; font-size: clamp(22px, 2.2vw, 32px); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .board em { font-style: normal; font-weight: 500; font-size: 13px; opacity: 0.8; text-align: right; white-space: nowrap; }
 .board a:hover span, .board a:focus-visible span { color: var(--accent); }
+.cap { left: 50%; top: calc(44% + min(15vw, 230px)); font-weight: 600; font-size: clamp(12px, 1.1vw, 16px); letter-spacing: 0.26em; text-transform: uppercase; white-space: nowrap; }
 .cta { left: 50%; bottom: 7vh; }
 .btn { display: inline-block; padding: 15px 28px; border-radius: 999px; background: #fff; color: var(--ink); border: 1.5px solid #fff; font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; transition: transform 220ms cubic-bezier(0.22, 0.8, 0.3, 1), background-color 220ms; }
 .btn.ghost { background: transparent; color: inherit; border-color: currentColor; }
