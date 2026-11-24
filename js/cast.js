@@ -55,7 +55,7 @@
     g.fillStyle = grd; g.beginPath(); g.arc(270, 190, 78, 0, PI * 2); g.fill();
     g.fillStyle = "#f4f1ea"; g.textAlign = "center";
     g.font = "700 40px system-ui, Segoe UI, Arial"; g.fillText("@riscei", 270, 335);
-    var stats = [["165.9K", "Followers"], ["9.8M", "Likes"], ["8.7%", "Engagement"]];
+    var stats = [["164.9K", "Followers"], ["10.2M", "Likes"], ["256", "Videos"]];
     stats.forEach(function (s, i) {
       var x = 100 + i * 170;
       g.fillStyle = "#f4f1ea"; g.font = "700 38px system-ui, Segoe UI, Arial"; g.fillText(s[0], x, 425);
