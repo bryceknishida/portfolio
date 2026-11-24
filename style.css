@@ -20,7 +20,7 @@ html.plain .stage, html.plain .track, html.plain .progress { display: none !impo
 /* The opening backdrop: a soft pool of teal light behind Sage on the dark page. */
 .tint { position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 62%, #12615a, rgba(12, 43, 42, 0) 70%); }
 .word { position: absolute; left: 50%; top: 46%; white-space: nowrap; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; font-size: 30vw; color: #fff; opacity: 0; will-change: transform; }
-#w-np { font-size: 15.5vw; } #w-gg { font-size: 30vw; color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.42); }
+#w-np { font-size: 15.5vw; } #w-gg { top: 76%; font-size: 26vw; color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.42); }
 /* Over footage the word is drawn as an outline, so the white text in front of it stays readable. */
 #w-riscei { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.5); }
 .sage { position: absolute; left: 50%; bottom: 0; height: min(88vh, 96vw); width: auto; will-change: transform;
@@ -90,13 +90,28 @@ h2 { margin: 0; font-weight: 800; font-size: clamp(34px, 4.4vw, 68px); line-heig
 .btn:hover { transform: translateY(-3px); } .btn:active { transform: scale(0.97); }
 .btn:focus-visible, .nav a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 30px 0 0; }
-.fine { margin: 26px auto 0; max-width: 46em; font-size: 11.5px; line-height: 1.6; font-weight: 500; opacity: 0.75; }
+/* Why hire me: four claims, each with the number that proves it. */
+.why { list-style: none; margin: 30px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
+.why li { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; align-items: center; padding: 16px 20px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); }
+.why b { grid-row: span 2; min-width: 3.1em; font-weight: 800; font-size: clamp(24px, 2.5vw, 38px); letter-spacing: -0.04em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.why strong { font-weight: 700; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.25; }
+.why span { font-weight: 500; font-size: 13.5px; line-height: 1.4; opacity: 0.86; }
+.chips { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.chips li { padding: 9px 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.24); font-weight: 600; font-size: 14px; }
+.chips.quiet { margin-top: 12px; } .chips.quiet li { background: transparent; border-style: dashed; font-weight: 500; opacity: 0.88; }
+/* The legal notice lives behind a small button, so the ending stays clean. */
+.credits { margin: 22px auto 0; max-width: 34em; pointer-events: auto; }
+.credits summary { display: inline-block; list-style: none; cursor: pointer; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 600; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8; }
+.credits summary::-webkit-details-marker { display: none; }
+.credits summary:hover, .credits[open] summary { opacity: 1; }
+.credits summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.credits p { margin: 12px 0 0; padding: 14px 18px; border-radius: 16px; background: rgba(4, 20, 26, 0.92); border: 1px solid rgba(255, 255, 255, 0.18); font-size: 12px; line-height: 1.6; font-weight: 500; }
 /* On the light rounds the text goes dark; main.js flips this class with the page colour. */
 body.light { --fg: #1d1512; --accent: #7a3f00; }
 body.light .stat { background: rgba(255, 255, 255, 0.42); border-color: rgba(255, 255, 255, 0.75); box-shadow: 0 18px 50px rgba(80, 50, 0, 0.14); }
 body.light .btn { background: #1d1512; color: #fff; border-color: #1d1512; } body.light .btn.ghost { background: transparent; color: #1d1512; }
 
-.track { position: relative; height: 1180vh; pointer-events: none; }
+.track { position: relative; height: 1340vh; pointer-events: none; }
 .track i { position: absolute; left: 0; width: 1px; height: 1px; }
 
 /* ------------------------------------------------------------ phones: text goes top and bottom, the hero keeps the middle */
@@ -107,7 +122,7 @@ body.light .btn { background: #1d1512; color: #fff; border-color: #1d1512; } bod
   .k.mid { top: 9vh; }
   h2 { font-size: clamp(30px, 9vw, 46px); } .k.mid h2 { font-size: clamp(36px, 11vw, 58px); }
   .say { font-size: 15px; margin-top: 12px; }
-  .word { font-size: 34vw; top: 50%; } #w-np { font-size: 17vw; } #w-gg { font-size: 36vw; }
+  .word { font-size: 34vw; top: 50%; } #w-np { font-size: 17vw; } #w-gg { top: 80%; font-size: 33vw; }
   .sage { height: min(64vh, 118vw); }
   .stat { padding: 11px 15px 10px; border-radius: 16px; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12, 43, 42, 0.72); }
   body.light .stat { background: rgba(255, 255, 255, 0.82); }
@@ -118,13 +133,15 @@ body.light .btn { background: #1d1512; color: #fff; border-color: #1d1512; } bod
   .cta { bottom: 8vh; } .btn { padding: 13px 22px; font-size: 12.5px; }
   .board { top: 45%; padding: 16px 16px 6px; border-radius: 18px; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(6, 26, 25, 0.9); }
   .board a { grid-template-columns: 1.4em 1fr auto; gap: 10px; padding: 11px 2px; } .board em { display: none; } .board span { font-size: 14px; } .board b { font-size: 20px; }
-  .fine { font-size: 10.5px; margin-top: 18px; }
+  .why { grid-template-columns: 1fr; gap: 8px; margin-top: 18px; } .why li { padding: 11px 14px; border-radius: 16px; gap: 1px 12px; } .why b { font-size: 22px; min-width: 2.9em; } .why strong { font-size: 14.5px; } .why span { font-size: 12.5px; }
+  .chips { margin-top: 16px; gap: 6px; } .chips li { padding: 7px 12px; font-size: 12.5px; }
+  .links { margin-top: 20px; gap: 8px; }
 }
 
 /* Short, wide screens (a phone on its side): keep the text clear of the nav and drop the side cards lower. */
 @media (max-height: 480px) {
   .k.left, .k.tl { top: max(12vh, 60px); } .k.mid { top: max(10vh, 54px); }
-  h2 { font-size: clamp(24px, 6vh, 40px); } .say { font-size: 14px; margin-top: 8px; } .fine { display: none; }
+  h2 { font-size: clamp(24px, 6vh, 40px); } .say { font-size: 14px; margin-top: 8px; } .why span, .chips.quiet { display: none; }
   .cta { bottom: 4vh; } .stat b { font-size: 26px; }
 }
 

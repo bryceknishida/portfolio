@@ -15,7 +15,7 @@
   /* Everything the timeline animates that is not a DOM element lives on this one object. */
   var S = { az: 0, el: 0.16, dist: 3, ty: 0.2, shift: 0,
             bvis: 0, bx: 0, by: 0, byaw: 0, bwalk: 0,
-            nvis: 0, nx: 0, nmove: 0, nmode: 1, nyaw: 0, fin: 0 };
+            nvis: 0, nx: 0, nmove: 0, nmode: 1, nyaw: 0, fin: 0, low: 0 };
 
   /* ---------------------------------------------------------------- 3D: photographed, not pasted on */
   var THREE = window.THREE, Cast = window.Cast, canvas = document.getElementById("gl");
@@ -64,7 +64,7 @@
     var portrait = !wide, k = portrait ? Math.max(1, 0.8 / camera.aspect) : 1;
     var dist = S.dist * k, ce = Math.cos(S.el), shift = portrait ? 0 : S.shift;
     var rx = Math.cos(S.az), rz = -Math.sin(S.az);                                   // the camera's right-hand direction
-    var lx = -shift * rx, lz = -shift * rz, ly = S.ty + (portrait ? 0.1 * dist / 2.4 : 0);   // look beside the subject so it sits off-centre
+    var lx = -shift * rx, lz = -shift * rz, ly = S.ty + (portrait ? 0.1 * dist / 2.4 : 0) + S.low * (portrait ? 1.05 : 0.62);   // look beside the subject so it sits off-centre
     camera.position.set(lx + dist * ce * Math.sin(S.az), ly + dist * Math.sin(S.el), lz + dist * ce * Math.cos(S.az));
     camera.lookAt(lx, ly, lz);
     beepo.root.visible = S.bvis > 0.5; cats.root.visible = S.nvis > 0.5;
@@ -164,7 +164,7 @@
     defaults: { ease: "power3.out", duration: 2.4 },
     scrollTrigger: { trigger: "#track", start: "top top", end: "bottom bottom", scrub: calm ? true : 0.9, invalidateOnRefresh: true,
       onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; speed = self.getVelocity(); } },
-    onUpdate: function () { var p = this.progress(); body.classList.toggle("light", p > 0.365 && p < 0.885); }   // follows the smoothed timeline, not the raw scroll
+    onUpdate: function () { var p = this.progress(); body.classList.toggle("light", p > 0.322 && p < 0.782); }   // follows the smoothed timeline, not the raw scroll
   });
   // GSAP owns the transform of everything it moves, so centring and the cards' resting tilt are set here, not in CSS.
   var TILT = { s1: -5, s2: 4, s3: 5, s4: -4 };
@@ -245,9 +245,15 @@
   tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.4, ty: 0.66, fin: 1, duration: 5, ease: "power2.inOut" }, 92.4)
     .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 93.2)
     .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 93.3)
-    .fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 4 }, 94);
-  show("#k-gg", 97.5, null, { y: 90 });
-  tl.to({}, { duration: 6 }, 101);            // the last hold, so the end of the page is still
+    .to(S, { ty: 0.72, dist: 3.6, duration: 3 }, 95);   // the cast drops lower to leave the top two thirds for words
+  // Three holds on the dark ending: the case for hiring me, who I am, then how to reach me.
+  // While the two text-heavy holds are up, the cast sinks out of the way (right off the bottom on a phone), then comes back for the goodbye.
+  tl.to(S, { low: 1, duration: 2.4, ease: "power2.inOut" }, 96.2).to(S, { low: 0, duration: 3, ease: "power2.out" }, 109.6);
+  show("#k-why", 97.5, 103.6, { y: 90 }, { y: -70 });
+  show("#k-about", 104.6, 110.6, { y: 90 }, { y: -70 });
+  tl.fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 4 }, 110.4);
+  show("#k-gg", 111.6, null, { y: 90 });
+  tl.to({}, { duration: 6 }, 115);            // the last hold, so the end of the page is still
 
   /* ---------------------------------------------------------------- boot */
   var lastW = vw, lastH = vh;
