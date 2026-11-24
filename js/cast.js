@@ -37,95 +37,64 @@
   function sstep(a, b, x) { var k = clamp((x - a) / (b - a)); return k * k * (3 - 2 * k); }
   function hop(k) { return k > 0 ? Math.sin(PI * (1 - k)) : 0; }
 
-  /* ------------------------------------------------------------ Riscei: a phone with desk gear around it */
-  function roundedRect(w, h, r) {
-    var s = new THREE.Shape(), x = -w / 2, y = -h / 2;
-    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
-    s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
-    s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
-    return s;
-  }
-
-  function screenTexture() {
-    var c = document.createElement("canvas"); c.width = 540; c.height = 1170;
-    var g = c.getContext("2d");
-    g.fillStyle = "#0b0b0e"; g.fillRect(0, 0, 540, 1170);
-    var grd = g.createRadialGradient(270, 190, 10, 270, 190, 90); grd.addColorStop(0, "#ff7a6e"); grd.addColorStop(1, "#b3261e");
-    g.fillStyle = grd; g.beginPath(); g.arc(270, 190, 78, 0, PI * 2); g.fill();
-    g.fillStyle = "#f4f1ea"; g.textAlign = "center";
-    g.font = "700 40px system-ui, Segoe UI, Arial"; g.fillText("@riscei", 270, 335);
-    var stats = [["164.9K", "Followers"], ["10.2M", "Likes"], ["256", "Videos"]];
-    stats.forEach(function (s, i) {
-      var x = 100 + i * 170;
-      g.fillStyle = "#f4f1ea"; g.font = "700 38px system-ui, Segoe UI, Arial"; g.fillText(s[0], x, 425);
-      g.fillStyle = "#8d8a86"; g.font = "400 21px system-ui, Segoe UI, Arial"; g.fillText(s[1], x, 458);
-    });
-    g.fillStyle = "#ff5a4f"; g.fillRect(40, 500, 460, 3);
-    var tiles = ["#3a1210", "#1b1d26", "#4a1a16", "#22232b", "#5a1f1a", "#15161c", "#2b0f0d", "#1e2029", "#431714"];
-    for (var i = 0; i < 9; i++) {
-      var tx = 40 + (i % 3) * 156, ty = 535 + Math.floor(i / 3) * 204;
-      g.fillStyle = tiles[i]; g.fillRect(tx, ty, 148, 196);
-      g.fillStyle = "rgba(244,241,234,0.85)"; g.beginPath(); g.moveTo(tx + 62, ty + 80); g.lineTo(tx + 62, ty + 116); g.lineTo(tx + 92, ty + 98); g.closePath(); g.fill();
-    }
-    var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  /* ------------------------------------------------------------ Riscei: a healing orb and a rising crystal wall (original shapes) */
+  function haloTexture(rgb) {
+    var c = document.createElement("canvas"); c.width = c.height = 128;
+    var g = c.getContext("2d"), r = g.createRadialGradient(64, 64, 2, 64, 64, 64);
+    r.addColorStop(0, "rgba(" + rgb + ",0.9)"); r.addColorStop(0.35, "rgba(" + rgb + ",0.28)"); r.addColorStop(1, "rgba(" + rgb + ",0)");
+    g.fillStyle = r; g.fillRect(0, 0, 128, 128);
+    var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }
 
   Cast.makeRiscei = function () {
-    var root = new THREE.Group(), tilt = new THREE.Group(); root.add(tilt);
-    var W = 0.3, H = 0.62, D = 0.028;
-    var bodyGeo = new THREE.ExtrudeGeometry(roundedRect(W, H, 0.045), { depth: D, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2, curveSegments: 8 });
-    bodyGeo.translate(0, 0, -D / 2);
-    var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0xd3d6dd, roughness: 0.32, metalness: 0.35 }));
-    tilt.add(body);
-    var screen = new THREE.Mesh(new THREE.ShapeGeometry(roundedRect(W - 0.022, H - 0.022, 0.036), 8),
-      new THREE.MeshBasicMaterial({ map: screenTexture(), toneMapped: false }));
-    // ShapeGeometry UVs are in shape units, so map them back onto 0..1 for the texture.
-    var uv = screen.geometry.attributes.uv, pos = screen.geometry.attributes.position;
-    for (var i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / (W - 0.022) + 0.5, pos.getY(i) / (H - 0.022) + 0.5);
-    screen.position.z = D / 2 + 0.0046; tilt.add(screen);
-
-    var glow = new THREE.PointLight(0xfff1e0, 0.5, 2.4); glow.position.set(-0.6, 0.3, 0.9); root.add(glow);
-
-    var props = Props(root);
-    // A 60 percent keyboard: one instanced mesh for all the keys.
-    var kb = new THREE.Group();
-    kb.add(POV.box(0.46, 0.02, 0.17, 0x1a1b21));
-    var keys = new THREE.InstancedMesh(new THREE.BoxGeometry(0.026, 0.014, 0.026), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.7 }), 70);
-    var m4 = new THREE.Matrix4(), col = new THREE.Color();
-    for (var r = 0; r < 5; r++) for (var c = 0; c < 14; c++) {
-      var k = r * 14 + c;
-      m4.makeTranslation(-0.2015 + c * 0.031, 0.016, -0.062 + r * 0.031); keys.setMatrixAt(k, m4);
-      keys.setColorAt(k, col.set((k === 0 || k === 41 || k === 69) ? 0x2a0f0b : ((r + c) % 7 === 0 ? 0x9a9da6 : 0xe9e6df)));
-    }
-    kb.add(keys); kb.rotation.set(0.75, -0.35, 0.12);
-    props.add(kb, -0.36, -0.3, 0.12, { spin: 0, amp: 0.012, depth: 0.42 });
-    // Mouse
-    var mouse = new THREE.Group();
-    mouse.add(POV.blob(0.045, 0.026, 0.07, 0x111217, 2, { flat: false, roughness: 0.4 }));
-    mouse.add(POV.at(POV.box(0.004, 0.012, 0.03, 0xffe6dc), 0, 0.022, 0.03));
-    mouse.rotation.set(0.6, 0.5, -0.2);
-    props.add(mouse, 0.27, -0.24, 0.2, { spin: 0, amp: 0.02, sp: 1.2, depth: 0.55 });
-    // Earbuds
-    [-1, 1].forEach(function (s) {
-      var bud = new THREE.Group();
-      bud.add(POV.blob(0.022, 0.022, 0.018, 0xf4f1ea, 2, { flat: false, roughness: 0.3 }));
-      bud.add(POV.at(POV.capsule(0.007, 0.04, 0xf4f1ea, { flat: false, roughness: 0.3 }), 0, -0.03, 0));
-      props.add(bud, -0.3 + s * 0.05, 0.3 + s * 0.02, -0.1, { spin: 0.5 * s, amp: 0.02, sp: 0.8 + s * 0.1, depth: 0.16 });
+    var root = new THREE.Group(), JADE = 0x49e3c4;
+    // See-through crystal: a tinted, glowing body with a faint bright wireframe so the facets catch the eye.
+    var crystalMat = new THREE.MeshStandardMaterial({ color: 0x7ff2dc, emissive: 0x1fb89a, emissiveIntensity: 0.6, roughness: 0.25, flatShading: true, transparent: true, opacity: 0.46, depthWrite: false });
+    var edgeMat = new THREE.LineBasicMaterial({ color: 0xd4fff5, transparent: true, opacity: 0.55, toneMapped: false });
+    var shards = [];
+    [[-0.66, 0.34, 0.1, 0.06, -0.12], [-0.54, 0.52, 0.02, 0.075, 0.05], [-0.41, 0.42, 0.1, 0.066, -0.05], [-0.3, 0.26, 0.04, 0.052, 0.13]].forEach(function (a, i) {
+      var g = new THREE.CylinderGeometry(a[3] * 0.35, a[3], a[1], 6, 1); g.translate(0, a[1] / 2, 0);   // origin at the base, so it grows upward
+      var m = new THREE.Mesh(g, crystalMat); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g), edgeMat));   // outline the facets only
+      m.position.set(a[0], -0.5, a[2]); m.rotation.set(0, i * 0.7, a[4]);
+      root.add(m); shards.push(m);
     });
-    // Loose keycaps
-    [[0.31, 0.3, -0.2, 0xfff3e6, 0.12], [0.4, 0.06, -0.3, 0xe9e6df, 0.1], [-0.4, 0.04, 0.3, 0xe9e6df, 0.62], [0.24, -0.36, 0.34, 0x2a2c35, 0.7], [-0.22, -0.02, -0.4, 0x2a2c35, 0.08]]
-      .forEach(function (a) { props.add(POV.box(0.04, 0.03, 0.04, a[3]), a[0], a[1], a[2], { spin: 0.7, depth: a[4], amp: 0.025 }); });
 
+    var orb = new THREE.Group(); orb.position.set(-0.46, 0.2, 0.25); root.add(orb);
+    var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.06, 1), new THREE.MeshStandardMaterial({ color: 0xbafff0, emissive: JADE, emissiveIntensity: 1.5, roughness: 0.2, flatShading: true }));
+    orb.add(core);
+    var halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTexture("73,227,196"), transparent: true, depthWrite: false, toneMapped: false }));
+    halo.scale.setScalar(0.46); orb.add(halo);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.004, 6, 44), new THREE.MeshBasicMaterial({ color: 0xbafff0, transparent: true, opacity: 0, toneMapped: false }));
+    orb.add(ring);
+    var bits = [];
+    for (var b = 0; b < 6; b++) { var bit = new THREE.Mesh(new THREE.OctahedronGeometry(0.012 + (b % 3) * 0.004, 0), crystalMat); orb.add(bit); bits.push(bit); }
+    var orbLight = new THREE.PointLight(JADE, 0.5, 0.55); orb.add(orbLight);   // short reach: it must not tint the animals in a line-up
+
+    var rise = 0;
     return {
-      root: root, h: 0, scale: 1, mobile: 0.6, fin: 0.52, intro: 0.85, shadow: false,
+      root: root, h: 0, scale: 1, mobile: 0.6, fin: 0.56, intro: 0.8, cx: 0.46, my: -0.2, shadow: false,   // cx, my: nudge on phones so the wall sits beside the artwork, clear of the face
       update: function (f) {
-        var k = 1 - f.tap, spin = f.tap > 0 ? PI * 2 * (1 - Math.pow(1 - k, 3)) : 0;   // one full turn per click, eased out
-        tilt.rotation.y = -0.38 + f.px * 0.45 + Math.sin(f.t * 0.5) * 0.08 + spin;
-        tilt.rotation.x = 0.06 + f.py * 0.22;
-        tilt.position.y = Math.sin(f.t * 0.9) * 0.012;
-        props.update(f);
+        orbLight.distance = 0.4 * root.scale.x;                              // a light's reach does not shrink with its parent, so do it by hand
+        var line = f.fin;                                                    // 1 while the cast stands in a line-up
+        var want = Math.max(line, 1 - clamp(Math.abs(f.d) * 1.5));           // the wall is up while Riscei holds the stage
+        rise = lerp(rise, want, 0.06);
+        for (var i = 0; i < shards.length; i++) {
+          var k = clamp(rise * 1.5 - i * 0.14), e = 1 - Math.pow(1 - k, 3);
+          shards[i].scale.set(0.6 + 0.4 * e, Math.max(0.001, e), 0.6 + 0.4 * e);
+        }
+        // The orb drifts toward the pointer; in a line-up it floats above the wall.
+        var ox = lerp(-0.46 + f.px * 0.2, -0.46, line), oy = lerp(0.2 - f.py * 0.18, 0.2, line) + Math.sin(f.t * 1.3) * 0.02;
+        orb.position.x = lerp(orb.position.x, ox, 0.07); orb.position.y = lerp(orb.position.y, oy, 0.07);
+        core.rotation.y += f.dt * 0.9; core.rotation.x += f.dt * 0.5;
+        halo.scale.setScalar(0.46 + Math.sin(f.t * 2.1) * 0.03 + f.tap * 0.25);
+        var p = 1 - f.tap;                                                   // a click sends one pulse ring outward
+        ring.visible = f.tap > 0; ring.scale.setScalar(1 + p * 5); ring.material.opacity = f.tap * 0.7;
+        for (var j = 0; j < bits.length; j++) {
+          var a = f.t * (0.8 + j * 0.13) + j * 1.05, r = 0.11 + (j % 2) * 0.035;
+          bits[j].position.set(Math.cos(a) * r, Math.sin(a * 1.3) * 0.05, Math.sin(a) * r);
+          bits[j].rotation.y += f.dt * 2;
+        }
       }
     };
   };
@@ -144,26 +113,28 @@
     var beepo = POV.makeBeepo();
     root.add(beepo.root);
     var props = Props(root);
-    [[-0.24, 0.44, -0.25, 0.1], [0.3, 0.38, -0.3, 0.12], [0.33, 0.12, 0.2, 0.6], [-0.27, 0.08, 0.24, 0.66], [0.02, 0.52, -0.4, 0.06]]
+    [[-0.25, 0.42, -0.25, 0.1], [0.31, 0.3, -0.3, 0.14], [0.3, 0.02, 0.22, 0.6]]
       .forEach(function (a, i) { props.add(hexCell(i % 2 ? 0xf5bf3c : 0xe89a1c), a[0], a[1], a[2], { depth: a[3], spin: 0.4 }); });
-    props.add(flower(0xff9fb4), -0.2, 0.27, 0.3, { depth: 0.5, spin: 0.25 });
-    props.add(flower(0xffffff), 0.26, 0.5, -0.1, { depth: 0.2, spin: -0.3 });
-    props.add(flower(0xff9fb4), 0.34, -0.02, -0.2, { depth: 0.14, spin: 0.3 });
-    var buzz = 0;
+    var glow = new THREE.PointLight(0xffc24a, 0, 0.5); glow.position.set(0, 0.47, 0.06); root.add(glow);   // warm light from the antenna tips
+    var buzz = 0, wingPhase = 0;
     return {
       root: root, h: 0.37, scale: 1.85, mobile: 0.62, fin: 0.8, intro: 1.4, shadow: true,
       update: function (f) {
         var j = hop(f.tap);
         buzz = lerp(buzz, Math.max(f.moving, f.tap > 0 ? 1 : 0), 0.12);
+        wingPhase += f.dt * (18 + buzz * 60);   // integrate, so a change of speed never makes the wings jump
         beepo.apply({
           pos: [0, j * 0.07, 0], yaw: f.px * 0.55 + f.d * 0.6, squash: j > 0 ? -0.12 * j : 0,
           breathe: f.t * 2.2, blink: POV.blinks(f.t % 4.6, BLINK_BEEPO),
-          headYaw: f.px * 0.35, headPitch: -f.py * 0.22, headTilt: Math.sin(f.t * 0.6) * 0.06, look: [f.px, f.py],
+          headYaw: f.px * 0.35, headPitch: -f.py * 0.22, headTilt: Math.sin(f.t * 0.6) * 0.06, look: [f.px, -f.py],
           mouth: j > 0 ? j * 0.7 : 0,
-          wing: 0.25 + buzz * 0.75, wingPhase: f.t * (18 + buzz * 60),
+          wing: 0.25 + buzz * 0.75, wingPhase: wingPhase,
           bob: f.t * 3.2, bobAmp: 0.5 + buzz * 0.5, tailPhase: f.t * 3, tailAmp: 0.6,
-          walk: f.walk, walkAmt: f.moving
+          walk: f.walk, walkAmt: f.moving,
+          antGlow: clamp(0.65 + 0.35 * Math.sin(f.t * 2.4) + buzz * 0.3), pawUp: j > 0 ? j : 0
         });
+        glow.distance = 0.5 * root.scale.x / 1.85;   // keep the glow on the antennae at any size
+        glow.intensity = 0.16 + 0.1 * Math.sin(f.t * 2.4) + buzz * 0.14;
         props.update(f);
       }
     };
@@ -219,9 +190,7 @@
     var props = Props(root);
     props.add(yarn(0x16c2b0), -0.36, 0.34, -0.2, { depth: 0.12, spin: 0.5 });
     props.add(yarn(0xff8fa0), 0.4, 0.2, 0.22, { depth: 0.6, spin: -0.4 });
-    props.add(yarn(0xffd25a), 0.1, 0.5, -0.36, { depth: 0.08, spin: 0.3 });
-    props.add(fish(0x6fb7e8), 0.36, 0.44, -0.12, { depth: 0.2, spin: 0.25 });
-    props.add(fish(0xf08a2e), -0.4, 0.08, 0.26, { depth: 0.64, spin: -0.3 });
+    props.add(fish(0x6fb7e8), 0.34, 0.46, -0.12, { depth: 0.2, spin: 0.25 });
     var R = 0.3, ang = 0, headYaw = 0;
     return {
       root: root, h: 0.3, scale: 1.12, mobile: 0.5, fin: 0.56, intro: 0.86, shadow: true,

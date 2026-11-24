@@ -44,6 +44,39 @@
   window.addEventListener("load", remeasure);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
 
+  /* ---------------------------------------------------------------- text reveals, counting numbers, the clip */
+  var rvs = [].slice.call(document.querySelectorAll(".rv"));
+  var calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function countUp(el) {
+    var end = parseFloat(el.dataset.count), dec = +(el.dataset.dec || 0), suf = el.dataset.suffix || "", t0 = performance.now();
+    if (calm) return;
+    (function step(now) {
+      var k = clamp((now - t0) / 1400, 0, 1), e = 1 - Math.pow(1 - k, 4);
+      el.textContent = (end * e).toFixed(dec) + suf;
+      if (k < 1) requestAnimationFrame(step); else el.textContent = end.toFixed(dec) + suf;
+    })(t0);
+  }
+  if ("IntersectionObserver" in window) {
+    root.classList.add("anim");
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target, sibs = [].slice.call(el.parentNode.children).filter(function (c) { return c.classList.contains("rv"); });
+        el.style.transitionDelay = Math.min(sibs.indexOf(el), 6) * 70 + "ms";   // siblings arrive one after another
+        el.classList.add("in");
+        setTimeout(function () { el.style.transitionDelay = ""; }, 1600);       // then drop the delay so later colour melts stay in step
+        [].forEach.call(el.matches("[data-count]") ? [el] : el.querySelectorAll("[data-count]"), countUp);
+        seen.unobserve(el);
+      });
+    }, { rootMargin: "0px 0px -12% 0px" });
+    rvs.forEach(function (el) { seen.observe(el); });
+    // The gameplay clip only downloads and plays while it is on screen.
+    var clip = document.querySelector(".clip video");
+    if (clip) new IntersectionObserver(function (es) {
+      es.forEach(function (en) { if (en.isIntersecting && !calm) { var p = clip.play(); if (p && p.catch) p.catch(function () {}); } else clip.pause(); });
+    }, { threshold: 0.25 }).observe(clip);
+  } else rvs.forEach(function (el) { el.classList.add("in"); });
+
   /* ---------------------------------------------------------------- 3D stage */
   var THREE = window.THREE, Cast = window.Cast, canvas = document.getElementById("stage");
   var renderer, scene, camera, cast = [];
@@ -115,24 +148,24 @@
   }
 
   var F = { t: 0, dt: 0, px: 0, py: 0, d: 0, fin: 0, walk: 0, moving: 0, tap: 0 };   // one frame-state object, reused
-  var lastY = window.scrollY, last = 0, raf = 0, born = -1;
+  var lastY = window.scrollY, last = 0, raf = 0, born = -1, sentX = 0, sentY = 0;
 
   // Where one cast member stands for scroll progress p. Returns how far it is from centre stage, in sections.
   function place(c, i, p, age) {
     var intro = clamp(1 - p, 0, 1), fin = clamp(p - (LAST - 1), 0, 1), d = i - clamp(p - 1, 0, 2);
     var fit = wide ? clamp(halfW / 1.0, 0.72, 1) : 1;
     // Solo: centre stage (right half on wide screens), arriving from below and leaving upward.
-    var s = c.scale * (wide ? fit : c.mobile), x = wide ? halfW * 0.5 : 0, y = (wide ? 0 : HALF_H * 0.42) - d * HALF_H * 3.2, ry = d * 1.2;
+    var s = c.scale * (wide ? fit : c.mobile), x = wide ? halfW * 0.5 : (c.cx || 0) * c.scale * c.mobile * 0.62, y = (wide ? 0 : HALF_H * 0.42 + (c.my || 0)) - d * HALF_H * 3.2, ry = d * 1.2;
     if (intro > 0) {
       // Opening: all three across the middle of the screen, each dropping in with a bounce on load.
       var gap = wide ? Math.min(0.64, halfW * 0.5) : halfW * 0.56, k = wide ? fit : 0.32;
       var drop = reduced ? 0 : (1 - bounce(clamp((age - 0.25 - i * 0.22) / 0.95, 0, 1))) * HALF_H * 2.8;
-      s = lerp(s, c.intro * k, intro); x = lerp(x, (i - 1) * gap, intro);
+      s = lerp(s, c.intro * k, intro); x = lerp(x, (i - 1) * gap + (c.cx || 0) * c.intro * k, intro);
       y = lerp(y, (wide ? -0.06 : 0.02) + drop, intro); ry = lerp(ry, drop * 2.2, intro);
     } else if (fin > 0) {
       // Ending: the three together beside the contact text.
       var m = wide ? fit : 0.42;
-      s = lerp(s, c.fin * m, fin); x = lerp(x, (wide ? halfW * 0.44 : 0) + (i - 1) * (wide ? 0.3 * fit : halfW * 0.62), fin);
+      s = lerp(s, c.fin * m, fin); x = lerp(x, (wide ? halfW * 0.44 : 0) + (i - 1) * (wide ? 0.3 * fit : halfW * 0.62) + (c.cx || 0) * c.fin * m, fin);
       y = lerp(y, wide ? 0 : HALF_H * 0.42, fin); ry = lerp(ry, 0, fin);
     }
     c.root.visible = Math.abs(d) < 0.98 || intro > 0.02 || fin > 0.02;
@@ -151,6 +184,9 @@
     var sy = window.scrollY, dy = sy - lastY; lastY = sy;
     px = lerp(px, tx, 0.08); py = lerp(py, ty, 0.08);
     if (tap > 0) tap = Math.max(0, tap - dt / 0.6);
+    if (Math.abs(px - sentX) + Math.abs(py - sentY) > 0.004) {   // the Sage artwork leans a few pixels against the pointer
+      sentX = px; sentY = py; root.style.setProperty("--mx", px.toFixed(3)); root.style.setProperty("--my", py.toFixed(3));
+    }
     var p = progress(), lineUp = p < 0.5 || p > LAST - 0.5, active = Math.round(clamp(p - 1, 0, 2));
     F.t = reduced ? 0 : t; F.dt = reduced ? 0 : dt; F.px = reduced ? 0 : px; F.py = reduced ? 0 : py;
     F.walk += reduced ? 0 : Math.abs(dy) * 0.045;

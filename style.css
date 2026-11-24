@@ -1,12 +1,14 @@
 /* One flat palette per section. main.js sets html[data-s] to the section on screen and the whole page melts across.
-   Every --accent is dark enough for small text on its own --bg (4.5:1 or better). */
+   Every --accent passes 4.5:1 against its own --bg for small text. */
 :root {
   --bg: #f3e8de; --ink: #2b1a12; --accent: #a8321c; --on-accent: #fff6ee; --word: #2b1a12;
-  --line: color-mix(in srgb, var(--ink) 20%, transparent);
-  --card: color-mix(in srgb, var(--bg) 92%, var(--ink) 8%);
+  --line: color-mix(in srgb, var(--ink) 16%, transparent);
+  --glass: color-mix(in srgb, var(--ink) 6%, transparent);
   --melt: 600ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
 }
-html[data-s="1"] { --bg: #f2543f; --ink: #1f0d09; --accent: #1f0d09; --on-accent: #ffe6dc; --word: #dc4330; }
+/* Riscei uses the exact background colour of the Sage artwork, so the picture has no visible edge. */
+html[data-s="1"] { --bg: #1c252e; --ink: #eef5f3; --accent: #49e3c4; --on-accent: #0c1c1b; --word: #232e39; }
 html[data-s="2"] { --bg: #ffe3a0; --ink: #3b2619; --accent: #7d4300; --on-accent: #fff6e0; --word: #f7cd6c; }
 html[data-s="3"] { --bg: #cfeee6; --ink: #153c37; --accent: #94400a; --on-accent: #fff5ea; --word: #b3dfd4; }
 html[data-s="4"] { --bg: #f3e8de; --ink: #2b1a12; --accent: #a8321c; --on-accent: #fff6ee; --word: #e7d8c9; }
@@ -20,29 +22,36 @@ body {
   -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 a { color: inherit; }
-.skip { position: fixed; left: 12px; top: -60px; z-index: 5; padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--bg); }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 6; padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--bg); }
 .skip:focus { top: 12px; }
 
-/* Layers, back to front: giant word, 3D canvas, page content. */
+/* Layers, back to front: giant word, Sage artwork, 3D canvas, page content. */
 .giant { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .giant span {
   position: absolute; left: 50%; top: 50%; white-space: nowrap; color: var(--word);
   font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; font-size: 27vw; line-height: 1; letter-spacing: -0.05em;
   opacity: 0; transform: translate(calc(-50% + var(--gx, 0px)), -50%) scale(0.96);
-  transition: opacity var(--melt), color var(--melt), transform 900ms cubic-bezier(.2, .8, .2, 1);
+  transition: opacity var(--melt), color var(--melt), transform 900ms var(--ease);
 }
 .giant span:nth-child(4) { font-size: 15.5vw; }
 .giant span.on { opacity: 1; transform: translate(calc(-50% + var(--gx, 0px)), -50%) scale(1); }
-#stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: block; }
-.nav, main, .hint { z-index: 2; }
+
+/* "lighten" lets only pixels brighter than the page through, so the artwork rises out of the dark as the page melts to its colour. */
+.sage {
+  position: fixed; z-index: 1; right: 2vw; bottom: 0; height: min(94vh, 62vw); width: auto; pointer-events: none;
+  mix-blend-mode: lighten; opacity: 0;
+  transform: translate3d(calc(var(--mx, 0) * -14px), calc(6vh + var(--my, 0) * -8px), 0) scale(1.02);
+  transition: opacity 500ms, transform 1100ms var(--ease);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 88%, transparent); mask-image: linear-gradient(to right, transparent, #000 14%, #000 88%, transparent);
+}
+html[data-s="1"] .sage { opacity: 1; transform: translate3d(calc(var(--mx, 0) * -14px), calc(var(--my, 0) * -8px), 0) scale(1); transition: opacity 900ms 250ms, transform 1100ms var(--ease); }
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: block; }
+.nav { z-index: 4; }
+main, .hint { z-index: 3; }
 main { position: relative; }
 html.no3d #stage, html.no3d .hint, html:not(.js) .hint, html:not(.js) #stage { display: none; }
 
-.nav {
-  position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 16px;
-  padding: 16px 6vw; font-size: 14px;
-}
-/* Content scrolling under the nav fades into the page colour instead of colliding with the links. */
+.nav { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 6vw; font-size: 14px; }
 .nav::before {
   content: ""; position: absolute; inset: 0 0 -18px 0; z-index: -1; background-color: var(--bg); transition: background-color var(--melt);
   -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent);
@@ -50,13 +59,13 @@ html.no3d #stage, html.no3d .hint, html:not(.js) .hint, html:not(.js) #stage { d
 .nav a { text-decoration: none; }
 .nav-name { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 10px 0; }
 .nav nav { display: flex; gap: 6px; }
-.nav nav a { opacity: 0.7; transition: opacity 200ms; padding: 10px 9px; border-bottom: 2px solid transparent; }
+.nav nav a { opacity: 0.82; transition: opacity 200ms; padding: 10px 9px; border-bottom: 2px solid transparent; }
 .nav nav a:hover, .nav nav a[aria-current="true"] { opacity: 1; }
 .nav nav a[aria-current="true"] { border-bottom-color: var(--accent); }
 
 .sec { min-height: 100vh; padding: 0 6vw; }
-.col { width: min(600px, 46vw); }
-.block { padding: 9vh 0; }
+.col { width: min(560px, 44vw); }
+.block { padding: 10vh 0; }
 .block.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 14vh 0 10vh; }
 
 /* Opening screen: the characters and the giant name carry it; the words stay small, in the corners. */
@@ -71,70 +80,97 @@ html.no3d #stage, html.no3d .hint, html:not(.js) .hint, html:not(.js) #stage { d
 @keyframes cue { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
 
 .eyebrow { margin: 0 0 14px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; transition: color var(--melt); }
-h1, h2 { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; margin: 0; }
-h2 { font-size: clamp(28px, 3vw, 40px); }
+h1, h2, h3 { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; margin: 0; }
+h2, h3 { font-size: clamp(26px, 2.6vw, 36px); }
 h2.big { font-size: clamp(46px, 6.6vw, 96px); }
-.lead { font-size: clamp(18px, 1.5vw, 21px); max-width: 30em; margin: 20px 0 0; }
-.sub { margin: 12px 0 0; max-width: 32em; opacity: 0.88; }
+.lead { font-size: clamp(18px, 1.45vw, 21px); max-width: 26em; margin: 20px 0 0; }
+.sub { margin: 14px 0 0; max-width: 30em; opacity: 0.88; }
 
-.stats { list-style: none; padding: 0; margin: 34px 0 0; display: flex; flex-wrap: wrap; gap: 26px 38px; }
-.stats b { display: block; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; font-size: clamp(28px, 3vw, 42px); line-height: 1; letter-spacing: -0.02em; }
-.stats span { display: block; margin-top: 7px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.78; }
+/* The one number that matters most in a section, set very large. */
+.mega { margin: 40px 0 0; }
+.mega b { display: block; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; font-size: clamp(72px, 10vw, 150px); line-height: 0.9; letter-spacing: -0.05em; color: var(--accent); font-variant-numeric: tabular-nums; transition: color var(--melt); }
+.mega span { display: block; margin-top: 12px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+
+/* Glass: a faint tint, a hairline edge and a blur of whatever passes behind. */
+.glass {
+  background: var(--glass); border: 1px solid var(--line); border-radius: 20px;
+  backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  transition: background-color var(--melt), border-color var(--melt);
+}
+.tiles { list-style: none; padding: 0; margin: 30px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tiles.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tiles li { padding: 22px 20px 18px; }
+.tiles b { display: block; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; font-size: clamp(30px, 3.2vw, 46px); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.tiles span { display: block; margin-top: 10px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+
+.clip { margin: 12px 0 0; padding: 8px 8px 0; overflow: hidden; }
+.clip video { display: block; width: 100%; aspect-ratio: 786 / 720; object-fit: cover; border-radius: 14px; background: #10171d; }
+.clip figcaption { padding: 12px 10px 14px; font-size: 13px; opacity: 0.85; }
+
+.bars { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 4px; }
+.bars a { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: baseline; padding: 18px 2px 14px; text-decoration: none; border-bottom: 1px solid var(--line); }
+.bar { position: absolute; left: 0; bottom: -1px; height: 2px; width: var(--w); background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 1200ms var(--ease) 200ms, background-color var(--melt); }
+.rv.in .bar { transform: scaleX(1); }
+.bar-t { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: 19px; font-weight: 500; line-height: 1.25; }
+.bar-t i { font-style: normal; font-family: "DM Sans", system-ui, sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-left: 6px; white-space: nowrap; }
+.bar-n { font-size: 14px; opacity: 0.85; white-space: nowrap; }
+.bar-n b { font-weight: 600; }
+.bars a:hover .bar-t, .bars a:focus-visible .bar-t { color: var(--accent); }
+
+.brands { list-style: none; padding: 0; margin: 22px 0 0; }
+.brands li { display: grid; grid-template-columns: 8.2em 1fr; gap: 16px; align-items: baseline; padding: 15px 2px; border-bottom: 1px solid var(--line); }
+.brands strong { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: 19px; }
+.brands span { font-size: 14px; opacity: 0.85; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 34px 0 0; }
 .btn {
   display: inline-block; padding: 13px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px;
   background: var(--accent); color: var(--on-accent); border: 1.5px solid var(--accent);
-  transition: background-color var(--melt), color var(--melt), border-color var(--melt), transform 160ms;
+  transition: background-color var(--melt), color var(--melt), border-color var(--melt), transform 200ms var(--ease);
 }
-.btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn.ghost { background: var(--glass); color: var(--ink); border-color: var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .btn:hover { transform: translateY(-2px); }
-.btn:focus-visible, .card:focus-visible, .nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-
-.cards { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
-.cards.two { grid-template-columns: 1fr 1fr; }
-.card {
-  display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 16px 18px; border-radius: 16px; text-decoration: none;
-  background: var(--card); border: 1px solid var(--line);
-  transition: background-color var(--melt), border-color var(--melt), transform 160ms;
-}
-a.card:hover { transform: translateY(-3px); border-color: var(--ink); }
-.card strong { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: 19px; line-height: 1.2; }
-.tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
-.nums { font-size: 14px; margin-top: auto; }
-.nums b { font-weight: 600; }
-.note { font-size: 14px; opacity: 0.9; }
+.btn:focus-visible, .bars a:focus-visible, .nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .chips { list-style: none; padding: 0; margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.chips li { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; }
-.foot { margin: 60px 0 0; font-size: 13px; opacity: 0.75; }
+.chips li { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass); font-size: 14px; }
+.foot { margin: 56px 0 0; font-size: 12px; line-height: 1.6; opacity: 0.72; max-width: 34em; }
 
-/* The hint shows under the opening line-up and leaves as soon as the page scrolls. */
+/* Text arrives as its section does. Only when JS is running, so nothing is hidden without it. */
+html.anim .rv { opacity: 0; transform: translateY(22px); transition: opacity 700ms var(--ease), transform 900ms var(--ease), color var(--melt), background-color var(--melt), border-color var(--melt); }
+html.anim .rv.in { opacity: 1; transform: none; }
+@media print { html.anim .rv { opacity: 1; transform: none; } #stage, .sage, .giant, .hint { display: none; } }
+
 .hint { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); margin: 0; white-space: nowrap; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 300ms; }
 html.ready:not(.scrolled) .hint { opacity: 0.75; }
 .hint-touch { display: none; }
 @media (hover: none) { .hint-mouse { display: none; } .hint-touch { display: inline; } }
 
-/* Phones and narrow windows: the character sits in the top half and the text rides up over it on a solid panel. */
+/* Phones and narrow windows: the hero sits in the top half and the text rides up over it on a solid panel. No blur here: it is costly over a live canvas. */
 @media (max-width: 860px) {
   .nav { padding: 8px 12px; }
   .nav nav { gap: 0; font-size: 13px; width: 100%; justify-content: space-between; }
   .nav-name { display: none; }
   .sec { padding: 0 14px; }
-  html.js:not(.no3d) .sec:not(.intro) { padding-top: 56vh; }
+  html.js:not(.no3d) .sec:not(.intro) { padding-top: 58vh; }
   html:not(.js) .sec:not(.intro), html.no3d .sec:not(.intro) { padding-top: 70px; }
   .sec.intro { padding: 11vh 22px 7vh; }
-  .intro-stats { gap: 22px; }
+  .intro-stats { gap: 20px; }
   .scroll-cue { display: none; }
   .col { width: 100%; }
-  .block { padding: 28px 18px; margin-top: 14px; border-radius: 22px; background: color-mix(in srgb, var(--bg) 95%, var(--ink) 5%); transition: background-color var(--melt); }
-  .block.hero { min-height: 0; margin-top: 0; padding: 28px 18px; display: block; }
+  .block { padding: 30px 20px; margin-top: 14px; border-radius: 24px; background: color-mix(in srgb, var(--bg) 94%, var(--ink) 6%); border: 1px solid var(--line); transition: background-color var(--melt), border-color var(--melt); }
+  .block.hero { min-height: 0; margin-top: 0; display: block; }
+  .glass, .btn.ghost { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .sec:last-child { padding-bottom: 14px; }
-  .cards.two { grid-template-columns: 1fr; }
-  .stats { gap: 20px 28px; margin-top: 24px; }
+  .tiles.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tiles.three li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .mega b { font-size: clamp(64px, 21vw, 110px); }
+  .bars a { grid-template-columns: 1fr; }
+  .brands li { grid-template-columns: 1fr; gap: 2px; }
   .giant span { font-size: 31vw; top: 42%; }
   .giant span:nth-child(4) { font-size: 17vw; }
   html:not([data-s="0"]) .giant span { top: 30%; }
+  .sage { right: auto; left: 50%; bottom: auto; top: 52px; height: 56vh; margin-left: -26vh; }
   .hint { bottom: 19vh; }
 }
 
@@ -142,5 +178,5 @@ html.ready:not(.scrolled) .hint { opacity: 0.75; }
   html { scroll-behavior: auto; }
   :root { --melt: 0ms; }
   .scroll-cue::after { animation: none; }
-  .giant span { transition: none; }
+  .giant span, .sage, html.anim .rv, .bar { transition: none; }
 }
