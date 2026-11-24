@@ -146,13 +146,14 @@
   var tl = gsap.timeline({
     defaults: { ease: "power3.out", duration: 2.4 },
     scrollTrigger: { trigger: "#track", start: "top top", end: "bottom bottom", scrub: calm ? true : 0.9,
-      onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; body.classList.toggle("light", self.progress > 0.325); } }
+      onUpdate: function (self) { bar.style.transform = "scaleX(" + self.progress.toFixed(4) + ")"; body.classList.toggle("light", self.progress > 0.365); } }
   });
   // GSAP owns the transform of everything it moves, so centring and the cards' resting tilt are set here, not in CSS.
   var TILT = { s1: -5, s2: 4, s3: 5, s4: -4 };
   function anchor() {
     gsap.set(".word, .stamp", { xPercent: -50, yPercent: -50 });
-    gsap.set("#sage, .cta, .k.mid", { xPercent: -50 });
+    gsap.set("#sage, .cta, .k.mid, .board", { xPercent: -50 });
+    gsap.set(".board", { yPercent: -50 });
     gsap.set(".k.left", { yPercent: wide ? -50 : 0 });
   }
   anchor();
@@ -185,50 +186,53 @@
   show("#s-likes", 23.5, 29.2, { x: 260, r: 14 }, { x: 320 });
   show("#s-foll", 24.0, 29.4, { y: 220, r: 10 }, { y: 260 });
   show("#s-mil", 24.5, 29.6, { y: -220, r: -10 }, { y: -260 });
-  show("#c-riscei", 25.2, 29.8, { y: 80 }, { y: 80 });
-  tl.to("#film", { opacity: 0, duration: 5, ease: "power1.inOut" }, 29.5)
-    .to(".tint", { opacity: 0, duration: 4 }, 29.5)
-    .to(body, { backgroundColor: "#f4cf63", duration: 5, ease: "power1.inOut" }, 29.5);
+  // The scoreboard: the footage holds on the ace and dims so the list reads.
+  tl.to(".tint", { opacity: 0.86, duration: 2.4 }, 29.4);
+  show("#k-board", 30.2, 36.0, { y: 140 }, { y: -120 });
+  show("#c-riscei", 31.4, 36.2, { y: 80 }, { y: 80 });
+  tl.to("#film", { opacity: 0, duration: 5, ease: "power1.inOut" }, 36.5)
+    .to(".tint", { opacity: 0, duration: 4 }, 36.5)
+    .to(body, { backgroundColor: "#f4cf63", duration: 5, ease: "power1.inOut" }, 36.5);
 
   // ---- Round 02, Beepo: he drops in, the camera pushes round to his face, then cranes overhead as he trots off.
-  tl.set(S, { bvis: 1, bx: 0, by: 1.5, byaw: -0.5, az: -0.6, el: 0.34, dist: 3.3, ty: 0.19, shift: 0 }, 34.4)
-    .to(S, { by: 0, duration: 4.2, ease: "bounce.out" }, 34.5)
-    .to(S, { az: 0.12, el: 0.13, dist: 1.45, byaw: 0, shift: 0.26, duration: 6, ease: "power2.inOut" }, 34.5)
-    .fromTo("#w-beepo", { autoAlpha: 0, x: function () { return W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 5 }, 34.5);
-  show("#k-beepo", 40.2, 45.2, { x: -120 }, { x: -80 });
-  tl.to(S, { az: 0.95, el: 0.06, dist: 1.02, ty: 0.25, shift: 0, duration: 7, ease: "power2.inOut" }, 45.3)
-    .to("#w-beepo", { x: function () { return -W() * 0.2; }, duration: 7, ease: none }, 45.3);
-  show("#b-foll", 51.6, 57.0, { x: -260, r: -14 }, { x: -320 });
-  show("#b-likes", 52.1, 57.2, { x: 260, r: 14 }, { x: 320 });
-  show("#b-plat", 52.6, 57.4, { y: 220, r: -10 }, { y: 260 });
-  show("#c-beepo", 53.2, 57.6, { y: 80 }, { y: 80 });
-  tl.to(S, { az: 2.1, el: 1.18, dist: 2.3, ty: 0.1, duration: 5.4, ease: "power2.inOut" }, 57.4)
-    .to(S, { bwalk: 1, duration: 1.2 }, 58.4)
-    .to(S, { bx: -1.5, byaw: -1.57, duration: 4.2, ease: "power1.in" }, 58.6)
-    .to("#w-beepo", { autoAlpha: 0, scale: 0.7, duration: 4, ease: "power2.in" }, 57.6)
-    .to(body, { backgroundColor: "#b9e3d6", duration: 5, ease: "power1.inOut" }, 58.4);
+  tl.set(S, { bvis: 1, bx: 0, by: 1.5, byaw: -0.5, az: -0.6, el: 0.34, dist: 3.3, ty: 0.19, shift: 0 }, 41.4)
+    .to(S, { by: 0, duration: 4.2, ease: "bounce.out" }, 41.5)
+    .to(S, { az: 0.12, el: 0.13, dist: 1.45, byaw: 0, shift: 0.26, duration: 6, ease: "power2.inOut" }, 41.5)
+    .fromTo("#w-beepo", { autoAlpha: 0, x: function () { return W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 5 }, 41.5);
+  show("#k-beepo", 47.2, 52.2, { x: -120 }, { x: -80 });
+  tl.to(S, { az: 0.95, el: 0.06, dist: 1.02, ty: 0.25, shift: 0, duration: 7, ease: "power2.inOut" }, 52.3)
+    .to("#w-beepo", { x: function () { return -W() * 0.2; }, duration: 7, ease: none }, 52.3);
+  show("#b-foll", 58.6, 64, { x: -260, r: -14 }, { x: -320 });
+  show("#b-likes", 59.1, 64.2, { x: 260, r: 14 }, { x: 320 });
+  show("#b-plat", 59.6, 64.4, { y: 220, r: -10 }, { y: 260 });
+  show("#c-beepo", 60.2, 64.6, { y: 80 }, { y: 80 });
+  tl.to(S, { az: 2.1, el: 1.18, dist: 2.3, ty: 0.1, duration: 5.4, ease: "power2.inOut" }, 64.4)
+    .to(S, { bwalk: 1, duration: 1.2 }, 65.4)
+    .to(S, { bx: -1.5, byaw: -1.57, duration: 4.2, ease: "power1.in" }, 65.6)
+    .to("#w-beepo", { autoAlpha: 0, scale: 0.7, duration: 4, ease: "power2.in" }, 64.6)
+    .to(body, { backgroundColor: "#b9e3d6", duration: 5, ease: "power1.inOut" }, 65.4);
 
   // ---- Round 03, Noodle and Pip: they walk in from the left with your scroll, stop, and look at you.
-  tl.set(S, { bvis: 0, bwalk: 0, nvis: 1, nmode: 1, nx: -2.3, nmove: 1, nyaw: 0, az: 0, el: 0.07, dist: 2.5, ty: 0.17, shift: 0 }, 63.2)
-    .to(S, { nx: 0.05, duration: 7, ease: none }, 63.3)
-    .fromTo("#w-np", { autoAlpha: 0, x: function () { return -W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 6 }, 63.3)
-    .to(S, { nmove: 0, shift: 0.32, duration: 1.4 }, 69.6);
-  show("#k-np", 70.2, 75.0, { x: -120 }, { x: -80 });
-  tl.to(S, { az: -0.75, el: 0.2, dist: 1.75, shift: 0, duration: 6, ease: "power2.inOut" }, 75.1)
-    .set(S, { nmode: 0 }, 76.6)
-    .to("#w-np", { x: function () { return W() * 0.12; }, duration: 6, ease: none }, 75.1);
-  show("#n-foll", 80.4, 85.2, { x: -260, r: -14 }, { x: -320 });
-  show("#n-likes", 80.9, 85.4, { x: 260, r: 14 }, { x: 320 });
-  tl.to("#w-np", { autoAlpha: 0, scale: 0.7, duration: 3.4, ease: "power2.in" }, 85.2)
-    .to(body, { backgroundColor: "#efe2d4", duration: 5, ease: "power1.inOut" }, 85.4);
+  tl.set(S, { bvis: 0, bwalk: 0, nvis: 1, nmode: 1, nx: -2.3, nmove: 1, nyaw: 0, az: 0, el: 0.07, dist: 2.5, ty: 0.17, shift: 0 }, 70.2)
+    .to(S, { nx: 0.05, duration: 7, ease: none }, 70.3)
+    .fromTo("#w-np", { autoAlpha: 0, x: function () { return -W() * 0.7; } }, { autoAlpha: 1, x: 0, duration: 6 }, 70.3)
+    .to(S, { nmove: 0, shift: 0.32, duration: 1.4 }, 76.6);
+  show("#k-np", 77.2, 82, { x: -120 }, { x: -80 });
+  tl.to(S, { az: -0.75, el: 0.2, dist: 1.75, shift: 0, duration: 6, ease: "power2.inOut" }, 82.1)
+    .set(S, { nmode: 0 }, 83.6)
+    .to("#w-np", { x: function () { return W() * 0.12; }, duration: 6, ease: none }, 82.1);
+  show("#n-foll", 87.4, 92.2, { x: -260, r: -14 }, { x: -320 });
+  show("#n-likes", 87.9, 92.4, { x: 260, r: 14 }, { x: 320 });
+  tl.to("#w-np", { autoAlpha: 0, scale: 0.7, duration: 3.4, ease: "power2.in" }, 92.2)
+    .to(body, { backgroundColor: "#efe2d4", duration: 5, ease: "power1.inOut" }, 92.4);
 
   // ---- Match point: everyone on stage together.
-  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.3, ty: 0.56, fin: 1, duration: 5, ease: "power2.inOut" }, 85.4)
-    .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 86.2)
-    .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 86.3)
-    .fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 0.5, scale: 1, duration: 4 }, 87);
-  show("#k-gg", 90.5, null, { y: 90 });
-  tl.to({}, { duration: 6 }, 94);            // the last hold, so the end of the page is still
+  tl.to(S, { nx: 0.42, az: 0, el: 0.1, dist: 3.3, ty: 0.56, fin: 1, duration: 5, ease: "power2.inOut" }, 92.4)
+    .set(S, { bvis: 1, bx: -0.62, by: 1.4, byaw: 0.35 }, 93.2)
+    .to(S, { by: 0, duration: 3.6, ease: "bounce.out" }, 93.3)
+    .fromTo("#w-gg", { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 0.5, scale: 1, duration: 4 }, 94);
+  show("#k-gg", 97.5, null, { y: 90 });
+  tl.to({}, { duration: 6 }, 101);            // the last hold, so the end of the page is still
 
   /* ---------------------------------------------------------------- boot */
   function resize() { size(); sizeFilm(); sizeGL(); anchor(); ScrollTrigger.refresh(); }
