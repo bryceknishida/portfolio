@@ -178,6 +178,7 @@
   // Bring a block in from one side during a hold, then send it out another way.
   function show(sel, tin, tout, from, to) {
     var el = document.querySelector(sel), rest = 0;
+    if (!el) return;   // a block missing from the page must never take the whole timeline down with it
     for (var key in TILT) if (el.classList.contains(key)) rest = TILT[key];
     var fade = el.querySelector("a") ? "autoAlpha" : "opacity", a = {}, b = {}, c = {};
     a[fade] = 0; b[fade] = 1; c[fade] = 0;
@@ -271,4 +272,5 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   if (!calm) gsap.from(".stage, .hud, .nav", { autoAlpha: 0, duration: 1.1, ease: "power2.out" });
   start();
+  window.__started = true;   // from here on a late error must not switch the page to the plain layout
 })();
